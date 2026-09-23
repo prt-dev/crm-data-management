@@ -4,9 +4,9 @@ import { Metadata } from "next";
 import React from "react";
 
 export const metadata: Metadata = {
-  title: "Clients | TailAdmin - Next.js CRM Dashboard",
+  title: "Clients",
   description:
-    "Manage, track, and monitor CRM client accounts, contracts, and lifecycle statuses.",
+    "Manage, track, and monitor CRM client accounts, contracts, and lifecycle statuses in Nleta CRM.",
 };
 
 export default function ClientsPage() {

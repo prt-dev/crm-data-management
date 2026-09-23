@@ -1,18 +1,17 @@
 import DemographicCard from "@/components/ecommerce/DemographicCard";
 import { EcommerceMetrics } from "@/components/ecommerce/EcommerceMetrics";
 import MonthlySalesChart from "@/components/ecommerce/MonthlySalesChart";
-import MonthlyTarget from "@/components/ecommerce/MonthlyTarget";
-import RecentOrders from "@/components/ecommerce/RecentOrders";
 import StatisticsChart from "@/components/ecommerce/StatisticsChart";
+import LeadTable from "@/components/tables/LeadTable";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title:
-    "Next.js E-commerce Dashboard | TailAdmin - Next.js Dashboard Template",
-  description: "This is Next.js Home for TailAdmin Dashboard Template",
+  title: "CRM Dashboard",
+  description:
+    "Comprehensive CRM overview, analytics, lead tracking, and client management for Nleta CRM.",
 };
 
-export default function Ecommerce() {
+export default function Dashboard() {
   return (
     <div className="grid grid-cols-12 gap-4 md:gap-6">
       <div className="col-span-12 space-y-6 xl:col-span-12">
@@ -20,7 +19,6 @@ export default function Ecommerce() {
       </div>
 
       <div className="col-span-12 xl:col-span-6 flex flex-col gap-4">
-
         <div className="col-span-12">
           {/* <MonthlyTarget /> */}
           <MonthlySalesChart />
@@ -36,7 +34,11 @@ export default function Ecommerce() {
       </div>
 
       <div className="col-span-12 xl:col-span-6">
-        <RecentOrders />
+        <LeadTable
+          title="Recent Leads"
+          description="Overview of latest incoming CRM leads"
+          showViewAll={true}
+        />
       </div>
     </div>
   );

@@ -5,6 +5,7 @@ import { type Locale, routing } from "@/i18n/routing";
 import "flatpickr/dist/flatpickr.css";
 import { NextIntlClientProvider } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
+import type { Metadata } from "next";
 import { Outfit } from "next/font/google";
 import { notFound } from "next/navigation";
 import "simplebar-react/dist/simplebar.min.css";
@@ -14,6 +15,21 @@ import "../globals.css";
 const outfit = Outfit({
   subsets: ["latin"],
 });
+
+export const metadata: Metadata = {
+  title: {
+    template: "%s | Nleta CRM",
+    default: "Nleta CRM - Data Management & Operations Dashboard",
+  },
+  description:
+    "Nleta CRM - Modern CRM Data Management, Lead Tracking, and Client Operations Dashboard.",
+  applicationName: "Nleta CRM",
+  icons: {
+    icon: "/images/logo/nleta-logo.png",
+    shortcut: "/images/logo/nleta-logo.png",
+    apple: "/images/logo/nleta-logo.png",
+  },
+};
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));

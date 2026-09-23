@@ -1,5 +1,6 @@
 "use client";
 
+import { Link } from "@/i18n/navigation";
 import React, { useState } from "react";
 import Badge from "../ui/badge/Badge";
 import {
@@ -11,7 +12,7 @@ import {
 } from "../ui/table";
 import Pagination from "./Pagination";
 
-interface LeadItem {
+export interface LeadItem {
   id: number;
   leadId: string;
   date: string;
@@ -21,6 +22,12 @@ interface LeadItem {
   state: string;
   assignedRegion: string;
   status: "New" | "Contacted" | "Qualified" | "In Progress" | "Closed";
+}
+
+export interface BasicTableOneProps {
+  title?: string;
+  description?: string;
+  showViewAll?: boolean;
 }
 
 // Define the CRM leads table data
@@ -123,11 +130,39 @@ const getStatusBadgeColor = (
   }
 };
 
-export default function BasicTableOne() {
+export default function BasicTableOne({
+  title,
+  description,
+  showViewAll,
+}: BasicTableOneProps = {}) {
   const [currentPage, setCurrentPage] = useState(1);
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/5 dark:bg-white/3">
+      {(title || showViewAll) && (
+        <div className="flex flex-col gap-2 p-5 sm:flex-row sm:items-center sm:justify-between border-b border-gray-100 dark:border-white/5">
+          <div>
+            {title && (
+              <h3 className="text-base font-semibold text-gray-800 dark:text-white/90">
+                {title}
+              </h3>
+            )}
+            {description && (
+              <p className="mt-0.5 text-theme-xs text-gray-500 dark:text-gray-400">
+                {description}
+              </p>
+            )}
+          </div>
+          {showViewAll && (
+            <Link
+              href="/leads"
+              className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3.5 py-2 text-theme-xs font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 dark:hover:text-gray-200"
+            >
+              View All
+            </Link>
+          )}
+        </div>
+      )}
       <div className="max-w-full overflow-x-auto">
         <Table>
           {/* Table Header */}
@@ -232,3 +267,5 @@ export default function BasicTableOne() {
     </div>
   );
 }
+
+export { BasicTableOne as LeadTable };
