@@ -1,0 +1,60 @@
+Prompt 1:
+use D:\Desktop\prateek-work\tailadmin-free-tailwind-dashboard-template-main\src project to create following components:-
+
+- forms like signin, signup
+- header and related components (search bar, notification card, etc)
+- sidebar
+- footer
+- breadcrumb
+- matric card
+- graphs
+- table with dynamic headers and relevant data
+
+
+also create a text file of my given prompts, and update that for every new prompt
+
+Prompt 2:
+continue last task with additional point to add more components 
+- button
+- single loader spinner using app logo
+
+Prompt 3:
+update meta data according to "National Lift Escalator Testing Agency" , app logo with nleta-logo.png, fevicon with nleta-logo.png
+
+Prompt 4:
+still old fevicon is showing
+
+Prompt 5:
+theme toggle icon is not correct
+sidebar toggle not working
+
+Prompt 6:
+no need of D:\Desktop\prateek-work\crm-data-management\app\nleta-logo.png\route.ts file use the image directly from its location
+
+Prompt 7:
+make a dashboard page under (admin) group using following components:-
+- metric cards
+- analysis graphs
+- leads table
+
+Prompt 8:
+continue with last task
+
+Prompt 9:
+create lead module in following way :-
+- create lead service for all crud related function to crud data
+- create/update page
+- view page (use respective analysis card using card component and use DynamicTable component for data)
+
+Prompt 10: 
+create pagination components from given them and attach in dynamictable component
+
+Prompt 11: 
+use the last prompt as direction to create following modules :-
+- clients
+- client assets
+- BDE
+- technician
+
+Prompt 12:
+create page for overall analysis of business
