@@ -58,3 +58,38 @@ use the last prompt as direction to create following modules :-
 
 Prompt 12:
 create page for overall analysis of business
+
+Prompt 13:
+we need to assign bde to leads or assign leads to bde
+- create respective service
+- can assign bde to specific lead in its create or update form
+
+we need to assign technician to a client or assign client to technician 
+- create respective service
+- can assign technician to specific client in its  create or update form
+
+Prompt 14:
+continue from after leadform
+
+Prompt 15:
+technician will be assigned to clients only not leads
+bde can be assigned to client also
+
+- created bdeClientService for BDE → Client assignments
+- added assignedBdeId / assignedBdeName fields to ClientItem type
+- updated ClientForm with BDE assignment section (Section 4) and sidebar preview
+- updated BDE detail modal to show both Lead and Client assignments
+- added "Assigned BDE" column (violet badge) to Clients table
+- clients page now subscribes to bdeClientService events
+
+Prompt 16:
+update files according to this else removed unusual code:-
+technician will be assigned to clients only not leads
+bde can be assigned to client also
+
+- removed "Assigned Safety Inspector" field entirely from leads (it was a technician concept, not for leads)
+- removed from: LeadItem type, leadService mock data, LeadForm (state + UI + submit payload + sidebar), leads/page.tsx (table column + detail panel), LeadsTable.tsx (local type + mock rows + search filter + detail panel)
+- inspector field correctly remains on Assets (client assets) only
+
+Prompt 17:
+update prompt.txt file

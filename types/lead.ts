@@ -45,7 +45,8 @@ export interface LeadItem {
   source: LeadSource;
   status: LeadStatus;
   priority?: LeadPriority;
-  assignedInspector: string;
+  assignedBdeId?: string;
+  assignedBdeName?: string;
   location?: string;
   createdDate: string;
   scheduledDate?: string;

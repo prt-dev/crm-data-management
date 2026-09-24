@@ -28,6 +28,10 @@ export interface ClientItem {
   contractValue: string;
   numericContractValue: number;
   accountManager: string;
+  assignedTechnicianId?: string;
+  assignedTechnicianName?: string;
+  assignedBdeId?: string;
+  assignedBdeName?: string;
   joinedDate: string;
   nextAuditDate?: string;
   notes?: string;

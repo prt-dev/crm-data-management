@@ -8,7 +8,10 @@ import MetricCard from "@/components/metrics/MetricCard";
 import DynamicTable, { Column } from "@/components/tables/DynamicTable";
 import Button from "@/components/ui/Button";
 import { technicianService } from "@/services/technicianService";
+import { clientTechnicianService } from "@/services/clientTechnicianService";
+import { clientService } from "@/services/clientService";
 import { TechnicianItem, TechnicianStats, TechnicianStatus } from "@/types/technician";
+import { ClientItem } from "@/types/client";
 
 export default function TechniciansViewPage() {
   const router = useRouter();
@@ -20,6 +23,12 @@ export default function TechniciansViewPage() {
   const [technicianToDelete, setTechnicianToDelete] = useState<TechnicianItem | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [quickStatusFilter, setQuickStatusFilter] = useState<string>("ALL");
+
+  // Client Assignment State for Selected Technician
+  const [assignedClients, setAssignedClients] = useState<ClientItem[]>([]);
+  const [allClients, setAllClients] = useState<ClientItem[]>([]);
+  const [clientToAssign, setClientToAssign] = useState<string>("");
+  const [isAssigningClient, setIsAssigningClient] = useState<boolean>(false);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -39,11 +48,70 @@ export default function TechniciansViewPage() {
     }
   };
 
+  const loadTechnicianClients = async (techId: string) => {
+    try {
+      const [techClients, all] = await Promise.all([
+        clientTechnicianService.getClientsForTechnician(techId),
+        clientService.getAllClients(),
+      ]);
+      setAssignedClients(techClients);
+      setAllClients(all);
+    } catch (e) {
+      console.error("Error loading clients for technician:", e);
+    }
+  };
+
   useEffect(() => {
     refreshData();
-    const unsub = technicianService.subscribe(() => refreshData());
-    return () => unsub();
+    const unsub1 = technicianService.subscribe(() => refreshData());
+    const unsub2 = clientTechnicianService.subscribe(() => refreshData());
+    return () => {
+      unsub1();
+      unsub2();
+    };
   }, []);
+
+  useEffect(() => {
+    if (selectedTechnician) {
+      loadTechnicianClients(selectedTechnician.id);
+    } else {
+      setAssignedClients([]);
+      setClientToAssign("");
+    }
+  }, [selectedTechnician]);
+
+  const handleAssignClientToTech = async () => {
+    if (!selectedTechnician || !clientToAssign) return;
+    setIsAssigningClient(true);
+    try {
+      await clientTechnicianService.assignTechnicianToClient(
+        clientToAssign,
+        selectedTechnician.id
+      );
+      showToast(`Client assigned to ${selectedTechnician.fullName}!`);
+      setClientToAssign("");
+      await loadTechnicianClients(selectedTechnician.id);
+      await refreshData();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to assign client";
+      showToast(msg);
+    } finally {
+      setIsAssigningClient(false);
+    }
+  };
+
+  const handleUnassignClient = async (clientId: string) => {
+    if (!selectedTechnician) return;
+    try {
+      await clientTechnicianService.unassignTechnicianFromClient(clientId);
+      showToast(`Client unassigned from technician.`);
+      await loadTechnicianClients(selectedTechnician.id);
+      await refreshData();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to unassign client";
+      showToast(msg);
+    }
+  };
 
   const handleDeleteConfirm = async () => {
     if (!technicianToDelete) return;
@@ -494,6 +562,97 @@ export default function TechniciansViewPage() {
                     </span>
                   </div>
                 </div>
+              </div>
+
+              {/* Assigned Clients Portfolio & Quick Allocation */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-400">
+                    Assigned Client Accounts ({assignedClients.length})
+                  </h4>
+                  <span className="text-[11px] font-medium text-brand-600 dark:text-brand-400">
+                    Active Audit Contracts
+                  </span>
+                </div>
+
+                {/* Client Assignment Action Bar */}
+                <div className="rounded-xl border border-gray-100 bg-gray-50/50 p-3.5 mb-3.5 dark:border-gray-800 dark:bg-gray-800/40">
+                  <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+                    Assign Client Account to {selectedTechnician.fullName}
+                  </label>
+                  <div className="flex gap-2">
+                    <select
+                      value={clientToAssign}
+                      onChange={(e) => setClientToAssign(e.target.value)}
+                      className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-700 focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
+                    >
+                      <option value="">-- Select a Client Account to Assign --</option>
+                      {allClients
+                        .filter((c) => c.assignedTechnicianId !== selectedTechnician.id)
+                        .map((client) => (
+                          <option key={client.id} value={client.id}>
+                            {client.id} - {client.companyName} ({client.totalAssetsCount} units) {client.assignedTechnicianName ? `[Reassign from ${client.assignedTechnicianName}]` : "[Unassigned]"}
+                          </option>
+                        ))}
+                    </select>
+                    <button
+                      type="button"
+                      disabled={!clientToAssign || isAssigningClient}
+                      onClick={handleAssignClientToTech}
+                      className="shrink-0 px-3.5 py-2 text-xs font-semibold rounded-xl bg-brand-600 text-white hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                    >
+                      {isAssigningClient ? "Assigning..." : "Assign Client"}
+                    </button>
+                  </div>
+                </div>
+
+                {/* List of currently assigned clients */}
+                {assignedClients.length === 0 ? (
+                  <div className="rounded-xl border border-dashed border-gray-200 p-4 text-center dark:border-gray-800">
+                    <p className="text-xs text-gray-400">No client accounts currently assigned to this technician.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
+                    {assignedClients.map((client) => (
+                      <div
+                        key={client.id}
+                        className="flex items-center justify-between rounded-xl border border-gray-100 bg-white p-3 shadow-xs dark:border-gray-800 dark:bg-gray-800/60 text-xs"
+                      >
+                        <div className="min-w-0 pr-3">
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono font-bold text-brand-600 dark:text-brand-400">
+                              {client.id}
+                            </span>
+                            <span className="font-semibold text-gray-800 dark:text-white truncate">
+                              {client.companyName}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-[11px] text-gray-400 mt-0.5">
+                            <span>{client.clientType}</span>
+                            <span>&bull;</span>
+                            <span className="font-medium text-gray-700 dark:text-gray-300">
+                              {client.totalAssetsCount} Units
+                            </span>
+                            <span>&bull;</span>
+                            <span className="rounded bg-gray-100 px-1.5 py-0.2 text-[10px] text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+                              {client.contractStatus}
+                            </span>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleUnassignClient(client.id)}
+                          title="Unassign client from technician"
+                          className="shrink-0 rounded-lg p-1.5 text-gray-400 hover:bg-error-50 hover:text-error-600 dark:hover:bg-error-500/10 dark:hover:text-error-400 transition"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {selectedTechnician.notes && (

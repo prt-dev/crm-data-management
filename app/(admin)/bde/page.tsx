@@ -8,7 +8,13 @@ import MetricCard from "@/components/metrics/MetricCard";
 import DynamicTable, { Column } from "@/components/tables/DynamicTable";
 import Button from "@/components/ui/Button";
 import { bdeService, formatINR } from "@/services/bdeService";
+import { bdeLeadService } from "@/services/bdeLeadService";
+import { bdeClientService } from "@/services/bdeClientService";
+import { leadService } from "@/services/leadService";
+import { clientService } from "@/services/clientService";
 import { BdeItem, BdeStats, BdeStatus } from "@/types/bde";
+import { LeadItem } from "@/types/lead";
+import { ClientItem } from "@/types/client";
 
 export default function BdeViewPage() {
   const router = useRouter();
@@ -20,6 +26,18 @@ export default function BdeViewPage() {
   const [bdeToDelete, setBdeToDelete] = useState<BdeItem | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [quickStatusFilter, setQuickStatusFilter] = useState<string>("ALL");
+
+  // Lead Assignment State for Selected BDE
+  const [assignedLeads, setAssignedLeads] = useState<LeadItem[]>([]);
+  const [allLeads, setAllLeads] = useState<LeadItem[]>([]);
+  const [leadToAssign, setLeadToAssign] = useState<string>("");
+  const [isAssigning, setIsAssigning] = useState<boolean>(false);
+
+  // Client Assignment State for Selected BDE
+  const [assignedClients, setAssignedClients] = useState<ClientItem[]>([]);
+  const [allClients, setAllClients] = useState<ClientItem[]>([]);
+  const [clientToAssign, setClientToAssign] = useState<string>("");
+  const [isAssigningClient, setIsAssigningClient] = useState<boolean>(false);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -39,11 +57,115 @@ export default function BdeViewPage() {
     }
   };
 
+  const loadBdeLeads = async (bdeId: string) => {
+    try {
+      const [bdeLeads, all] = await Promise.all([
+        bdeLeadService.getLeadsForBde(bdeId),
+        leadService.getAllLeads(),
+      ]);
+      setAssignedLeads(bdeLeads);
+      setAllLeads(all);
+    } catch (e) {
+      console.error("Error loading leads for BDE:", e);
+    }
+  };
+
+  const loadBdeClients = async (bdeId: string) => {
+    try {
+      const [bdeClients, all] = await Promise.all([
+        bdeClientService.getClientsForBde(bdeId),
+        clientService.getAllClients(),
+      ]);
+      setAssignedClients(bdeClients);
+      setAllClients(all);
+    } catch (e) {
+      console.error("Error loading clients for BDE:", e);
+    }
+  };
+
   useEffect(() => {
     refreshData();
-    const unsub = bdeService.subscribe(() => refreshData());
-    return () => unsub();
+    const unsub1 = bdeService.subscribe(() => refreshData());
+    const unsub2 = bdeLeadService.subscribe(() => refreshData());
+    const unsub3 = bdeClientService.subscribe(() => refreshData());
+    return () => {
+      unsub1();
+      unsub2();
+      unsub3();
+    };
   }, []);
+
+  useEffect(() => {
+    if (selectedBde) {
+      loadBdeLeads(selectedBde.id);
+      loadBdeClients(selectedBde.id);
+    } else {
+      setAssignedLeads([]);
+      setLeadToAssign("");
+      setAssignedClients([]);
+      setClientToAssign("");
+    }
+  }, [selectedBde]);
+
+  const handleAssignLeadToBde = async () => {
+    if (!selectedBde || !leadToAssign) return;
+    setIsAssigning(true);
+    try {
+      await bdeLeadService.assignBdeToLead(leadToAssign, selectedBde.id);
+      showToast(`Lead ${leadToAssign} assigned to ${selectedBde.fullName}!`);
+      setLeadToAssign("");
+      await loadBdeLeads(selectedBde.id);
+      await refreshData();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to assign lead";
+      showToast(msg);
+    } finally {
+      setIsAssigning(false);
+    }
+  };
+
+  const handleUnassignLead = async (leadId: string) => {
+    if (!selectedBde) return;
+    try {
+      await bdeLeadService.unassignBdeFromLead(leadId);
+      showToast(`Lead ${leadId} unassigned from executive.`);
+      await loadBdeLeads(selectedBde.id);
+      await refreshData();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to unassign lead";
+      showToast(msg);
+    }
+  };
+
+  const handleAssignClientToBde = async () => {
+    if (!selectedBde || !clientToAssign) return;
+    setIsAssigningClient(true);
+    try {
+      await bdeClientService.assignBdeToClient(clientToAssign, selectedBde.id);
+      showToast(`Client ${clientToAssign} assigned to ${selectedBde.fullName}!`);
+      setClientToAssign("");
+      await loadBdeClients(selectedBde.id);
+      await refreshData();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to assign client";
+      showToast(msg);
+    } finally {
+      setIsAssigningClient(false);
+    }
+  };
+
+  const handleUnassignClient = async (clientId: string) => {
+    if (!selectedBde) return;
+    try {
+      await bdeClientService.unassignBdeFromClient(clientId);
+      showToast(`Client ${clientId} unassigned from executive.`);
+      await loadBdeClients(selectedBde.id);
+      await refreshData();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to unassign client";
+      showToast(msg);
+    }
+  };
 
   const handleDeleteConfirm = async () => {
     if (!bdeToDelete) return;
@@ -502,6 +624,188 @@ export default function BdeViewPage() {
                     </div>
                   </div>
                 </div>
+              </div>
+
+              {/* Assigned Leads Pipeline & Quick Allocation */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-400">
+                    Assigned Pipeline Leads ({assignedLeads.length})
+                  </h4>
+                  <span className="text-[11px] font-medium text-brand-600 dark:text-brand-400">
+                    Active Deals in Funnel
+                  </span>
+                </div>
+
+                {/* Lead Assignment Action Bar */}
+                <div className="rounded-xl border border-gray-100 bg-gray-50/50 p-3.5 mb-3.5 dark:border-gray-800 dark:bg-gray-800/40">
+                  <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+                    Assign New Lead to {selectedBde.fullName}
+                  </label>
+                  <div className="flex gap-2">
+                    <select
+                      value={leadToAssign}
+                      onChange={(e) => setLeadToAssign(e.target.value)}
+                      className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-700 focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
+                    >
+                      <option value="">-- Select a Lead to Assign --</option>
+                      {allLeads
+                        .filter((l) => l.assignedBdeId !== selectedBde.id)
+                        .map((lead) => (
+                          <option key={lead.id} value={lead.id}>
+                            {lead.id} - {lead.facilityName} ({lead.estimatedValue}) {lead.assignedBdeName ? `[Reassign from ${lead.assignedBdeName}]` : "[Unassigned]"}
+                          </option>
+                        ))}
+                    </select>
+                    <button
+                      type="button"
+                      disabled={!leadToAssign || isAssigning}
+                      onClick={handleAssignLeadToBde}
+                      className="shrink-0 px-3.5 py-2 text-xs font-semibold rounded-xl bg-brand-600 text-white hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                    >
+                      {isAssigning ? "Assigning..." : "Assign Lead"}
+                    </button>
+                  </div>
+                </div>
+
+                {/* List of currently assigned leads */}
+                {assignedLeads.length === 0 ? (
+                  <div className="rounded-xl border border-dashed border-gray-200 p-4 text-center dark:border-gray-800">
+                    <p className="text-xs text-gray-400">No leads currently assigned to this executive.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
+                    {assignedLeads.map((lead) => (
+                      <div
+                        key={lead.id}
+                        className="flex items-center justify-between rounded-xl border border-gray-100 bg-white p-3 shadow-xs dark:border-gray-800 dark:bg-gray-800/60 text-xs"
+                      >
+                        <div className="min-w-0 pr-3">
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono font-bold text-brand-600 dark:text-brand-400">
+                              {lead.id}
+                            </span>
+                            <span className="font-semibold text-gray-800 dark:text-white truncate">
+                              {lead.facilityName}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-[11px] text-gray-400 mt-0.5">
+                            <span>{lead.facilityType}</span>
+                            <span>&bull;</span>
+                            <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                              {lead.estimatedValue}
+                            </span>
+                            <span>&bull;</span>
+                            <span className="rounded bg-gray-100 px-1.5 py-0.2 text-[10px] text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+                              {lead.status}
+                            </span>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleUnassignLead(lead.id)}
+                          title="Unassign lead from executive"
+                          className="shrink-0 rounded-lg p-1.5 text-gray-400 hover:bg-error-50 hover:text-error-600 dark:hover:bg-error-500/10 dark:hover:text-error-400 transition"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Assigned Clients & Quick Allocation */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-400">
+                    Assigned Client Accounts ({assignedClients.length})
+                  </h4>
+                  <span className="text-[11px] font-medium text-violet-600 dark:text-violet-400">
+                    Account Relationships
+                  </span>
+                </div>
+
+                {/* Client Assignment Action Bar */}
+                <div className="rounded-xl border border-gray-100 bg-gray-50/50 p-3.5 mb-3.5 dark:border-gray-800 dark:bg-gray-800/40">
+                  <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+                    Assign Client Account to {selectedBde.fullName}
+                  </label>
+                  <div className="flex gap-2">
+                    <select
+                      value={clientToAssign}
+                      onChange={(e) => setClientToAssign(e.target.value)}
+                      className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-700 focus:border-violet-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
+                    >
+                      <option value="">-- Select a Client to Assign --</option>
+                      {allClients
+                        .filter((c) => c.assignedBdeId !== selectedBde.id)
+                        .map((client) => (
+                          <option key={client.id} value={client.id}>
+                            {client.id} - {client.companyName} ({client.contractValue}) {client.assignedBdeName ? `[Reassign from ${client.assignedBdeName}]` : "[Unassigned]"}
+                          </option>
+                        ))}
+                    </select>
+                    <button
+                      type="button"
+                      disabled={!clientToAssign || isAssigningClient}
+                      onClick={handleAssignClientToBde}
+                      className="shrink-0 px-3.5 py-2 text-xs font-semibold rounded-xl bg-violet-600 text-white hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                    >
+                      {isAssigningClient ? "Assigning..." : "Assign Client"}
+                    </button>
+                  </div>
+                </div>
+
+                {/* List of currently assigned clients */}
+                {assignedClients.length === 0 ? (
+                  <div className="rounded-xl border border-dashed border-gray-200 p-4 text-center dark:border-gray-800">
+                    <p className="text-xs text-gray-400">No client accounts currently assigned to this executive.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
+                    {assignedClients.map((client) => (
+                      <div
+                        key={client.id}
+                        className="flex items-center justify-between rounded-xl border border-gray-100 bg-white p-3 shadow-xs dark:border-gray-800 dark:bg-gray-800/60 text-xs"
+                      >
+                        <div className="min-w-0 pr-3">
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono font-bold text-violet-600 dark:text-violet-400">
+                              {client.id}
+                            </span>
+                            <span className="font-semibold text-gray-800 dark:text-white truncate">
+                              {client.companyName}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-[11px] text-gray-400 mt-0.5">
+                            <span>{client.clientType}</span>
+                            <span>&bull;</span>
+                            <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                              {client.contractValue}
+                            </span>
+                            <span>&bull;</span>
+                            <span className="rounded bg-gray-100 px-1.5 py-0.2 text-[10px] text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+                              {client.contractStatus}
+                            </span>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleUnassignClient(client.id)}
+                          title="Unassign client from executive"
+                          className="shrink-0 rounded-lg p-1.5 text-gray-400 hover:bg-error-50 hover:text-error-600 dark:hover:bg-error-500/10 dark:hover:text-error-400 transition"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {selectedBde.notes && (

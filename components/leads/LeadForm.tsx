@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -14,6 +14,9 @@ import {
   LeadPriority,
 } from "@/types/lead";
 import { leadService, formatStandardINR } from "@/services/leadService";
+import { bdeService } from "@/services/bdeService";
+import { bdeLeadService } from "@/services/bdeLeadService";
+import { BdeItem } from "@/types/bde";
 import Button from "@/components/ui/Button";
 
 interface LeadFormProps {
@@ -55,13 +58,6 @@ const leadStatuses: LeadStatus[] = [
   "Rejected / Inactive",
 ];
 
-const inspectors = [
-  "Inspector Rajesh Sharma",
-  "Inspector Amitav Sen",
-  "Inspector Meera Joshi",
-  "Senior Eng. Harish Chander",
-  "Inspector Priya Sundaram",
-];
 
 export default function LeadForm({ initialLead, isEdit = false }: LeadFormProps) {
   const router = useRouter();
@@ -94,9 +90,26 @@ export default function LeadForm({ initialLead, isEdit = false }: LeadFormProps)
   const [priority, setPriority] = useState<LeadPriority>(
     initialLead?.priority || "Medium"
   );
-  const [assignedInspector, setAssignedInspector] = useState(
-    initialLead?.assignedInspector || inspectors[0]
+  const [assignedBdeId, setAssignedBdeId] = useState<string>(
+    initialLead?.assignedBdeId || ""
   );
+  const [assignedBdeName, setAssignedBdeName] = useState<string>(
+    initialLead?.assignedBdeName || ""
+  );
+  const [bdesList, setBdesList] = useState<BdeItem[]>([]);
+
+  useEffect(() => {
+    async function loadBdes() {
+      try {
+        const list = await bdeService.getAllBdes();
+        setBdesList(list);
+      } catch (err) {
+        console.error("Failed to load BDEs in LeadForm:", err);
+      }
+    }
+    loadBdes();
+  }, []);
+
   const [scheduledDate, setScheduledDate] = useState(
     initialLead?.scheduledDate || ""
   );
@@ -160,12 +173,21 @@ export default function LeadForm({ initialLead, isEdit = false }: LeadFormProps)
           source,
           status,
           priority,
-          assignedInspector,
+          assignedBdeId: assignedBdeId || undefined,
+          assignedBdeName: assignedBdeName || undefined,
           scheduledDate: scheduledDate || undefined,
           notes: notes.trim(),
         };
 
         await leadService.updateLead(initialLead.id, updateData);
+
+        // Sync with BDE service
+        if (assignedBdeId) {
+          await bdeLeadService.assignBdeToLead(initialLead.id, assignedBdeId);
+        } else {
+          await bdeLeadService.unassignBdeFromLead(initialLead.id);
+        }
+
         setSuccessToast(`Lead ${initialLead.id} updated successfully!`);
       } else {
         const createData: CreateLeadInput = {
@@ -183,12 +205,19 @@ export default function LeadForm({ initialLead, isEdit = false }: LeadFormProps)
           source,
           status,
           priority,
-          assignedInspector,
+          assignedBdeId: assignedBdeId || undefined,
+          assignedBdeName: assignedBdeName || undefined,
           scheduledDate: scheduledDate || undefined,
           notes: notes.trim(),
         };
 
         const created = await leadService.createLead(createData);
+
+        // Sync with BDE service
+        if (assignedBdeId) {
+          await bdeLeadService.assignBdeToLead(created.id, assignedBdeId);
+        }
+
         setSuccessToast(`Lead created successfully with ID: ${created.id}`);
       }
 
@@ -428,22 +457,40 @@ export default function LeadForm({ initialLead, isEdit = false }: LeadFormProps)
                 />
               </div>
 
-              {/* Assigned Inspector */}
-              <div>
+              {/* Assigned BDE Executive */}
+              <div className="">
                 <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
-                  Assigned Safety Inspector
+                  Assigned Business Development Executive (BDE)
                 </label>
-                <select
-                  value={assignedInspector}
-                  onChange={(e) => setAssignedInspector(e.target.value)}
-                  className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm font-medium text-gray-700 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-300"
-                >
-                  {inspectors.map((insp) => (
-                    <option key={insp} value={insp}>
-                      {insp}
-                    </option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <select
+                    value={assignedBdeId}
+                    onChange={(e) => {
+                      const id = e.target.value;
+                      setAssignedBdeId(id);
+                      const bde = bdesList.find((b) => b.id === id);
+                      setAssignedBdeName(bde ? bde.fullName : "");
+                    }}
+                    className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm font-medium text-gray-700 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-300"
+                  >
+                    <option value="">-- Unassigned (General Inquiry Pool) --</option>
+                    {bdesList.map((bde) => (
+                      <option key={bde.id} value={bde.id}>
+                        {bde.fullName} ({bde.employeeCode} &bull; {bde.designation} &bull; {bde.region})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                {assignedBdeName ? (
+                  <p className="mt-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                    Assigned to {assignedBdeName} ({assignedBdeId})
+                  </p>
+                ) : (
+                  <p className="mt-1 text-[11px] text-gray-400">
+                    Lead is in general inbound pool. Select a BDE executive to assign direct pipeline ownership.
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -569,15 +616,14 @@ export default function LeadForm({ initialLead, isEdit = false }: LeadFormProps)
                         type="button"
                         key={p}
                         onClick={() => setPriority(p)}
-                        className={`rounded-xl py-2 text-xs font-semibold transition border ${
-                          isSelected
+                        className={`rounded-xl py-2 text-xs font-semibold transition border ${isSelected
                             ? p === "High"
                               ? "bg-red-50 text-red-700 border-red-300 dark:bg-red-500/20 dark:text-red-300 dark:border-red-500/40"
                               : p === "Medium"
-                              ? "bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/40"
-                              : "bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-500/20 dark:text-blue-300 dark:border-blue-500/40"
+                                ? "bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/40"
+                                : "bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-500/20 dark:text-blue-300 dark:border-blue-500/40"
                             : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700"
-                        }`}
+                          }`}
                       >
                         {p}
                       </button>
@@ -668,9 +714,9 @@ export default function LeadForm({ initialLead, isEdit = false }: LeadFormProps)
                 </span>
               </div>
               <div className="flex justify-between text-gray-600 dark:text-gray-400">
-                <span>Assigned:</span>
-                <span className="font-medium text-gray-800 dark:text-white truncate max-w-[140px]">
-                  {assignedInspector}
+                <span>Assigned BDE:</span>
+                <span className="font-semibold text-brand-600 dark:text-brand-400 truncate max-w-[140px]">
+                  {assignedBdeName || "Unassigned"}
                 </span>
               </div>
             </div>

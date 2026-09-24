@@ -138,13 +138,12 @@ export default function LeadsViewPage() {
       render: (row) => (
         <div className="flex items-center gap-1.5">
           <span
-            className={`h-2 w-2 rounded-full shrink-0 ${
-              row.priority === "High"
+            className={`h-2 w-2 rounded-full shrink-0 ${row.priority === "High"
                 ? "bg-red-500"
                 : row.priority === "Medium"
-                ? "bg-amber-400"
-                : "bg-blue-400"
-            }`}
+                  ? "bg-amber-400"
+                  : "bg-blue-400"
+              }`}
             title={`Priority: ${row.priority || "Normal"}`}
           />
           <span className="font-mono text-xs font-bold text-brand-600 dark:text-brand-400 hover:underline">
@@ -214,25 +213,6 @@ export default function LeadsViewPage() {
         <span className="font-semibold text-emerald-600 dark:text-emerald-400">
           {row.estimatedValue || formatStandardINR(row.numericValue)}
         </span>
-      ),
-    },
-    {
-      key: "assignedInspector",
-      header: "Safety Inspector",
-      sortable: true,
-      render: (row) => (
-        <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-50 text-[11px] font-bold text-brand-600 dark:bg-brand-500/20 dark:text-brand-300">
-            {row.assignedInspector
-              .split(" ")
-              .map((n) => n[0])
-              .slice(-2)
-              .join("")}
-          </div>
-          <span className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate max-w-[130px]">
-            {row.assignedInspector}
-          </span>
-        </div>
       ),
     },
     {
@@ -465,19 +445,17 @@ export default function LeadsViewPage() {
               key={pill.value}
               type="button"
               onClick={() => setQuickStatusFilter(pill.value)}
-              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition ${
-                isActive
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition ${isActive
                   ? "bg-brand-500 text-white shadow-theme-xs font-semibold"
                   : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50 dark:bg-gray-900 dark:border-gray-800 dark:text-gray-300 dark:hover:bg-gray-800"
-              }`}
+                }`}
             >
               <span>{pill.label}</span>
               <span
-                className={`rounded-full px-1.5 py-0.2 text-[10px] ${
-                  isActive
+                className={`rounded-full px-1.5 py-0.2 text-[10px] ${isActive
                     ? "bg-white/20 text-white"
                     : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"
-                }`}
+                  }`}
               >
                 {pill.count}
               </span>
@@ -569,13 +547,12 @@ export default function LeadsViewPage() {
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-gray-500 dark:text-gray-400">Priority:</span>
                   <span
-                    className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                      selectedLead.priority === "High"
+                    className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${selectedLead.priority === "High"
                         ? "bg-red-50 text-red-600 dark:bg-red-500/15 dark:text-red-400"
                         : selectedLead.priority === "Medium"
-                        ? "bg-amber-50 text-amber-600 dark:bg-amber-500/15 dark:text-amber-400"
-                        : "bg-blue-50 text-blue-600 dark:bg-blue-500/15 dark:text-blue-400"
-                    }`}
+                          ? "bg-amber-50 text-amber-600 dark:bg-amber-500/15 dark:text-amber-400"
+                          : "bg-blue-50 text-blue-600 dark:bg-blue-500/15 dark:text-blue-400"
+                      }`}
                   >
                     {selectedLead.priority || "Normal"}
                   </span>
@@ -623,9 +600,6 @@ export default function LeadsViewPage() {
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                     Audit Type: <span className="font-medium text-gray-700 dark:text-gray-300">{selectedLead.auditType}</span>
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                    Assigned Inspector: <span className="font-medium text-brand-600 dark:text-brand-400">{selectedLead.assignedInspector}</span>
                   </p>
                 </div>
               </div>
@@ -685,11 +659,10 @@ export default function LeadsViewPage() {
                         showToast(`Status updated to "${st}"`);
                         refreshData();
                       }}
-                      className={`rounded-lg px-2.5 py-1 text-xs font-medium transition ${
-                        selectedLead.status === st
+                      className={`rounded-lg px-2.5 py-1 text-xs font-medium transition ${selectedLead.status === st
                           ? "bg-brand-500 text-white font-bold cursor-default"
                           : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
-                      }`}
+                        }`}
                     >
                       {st}
                     </button>

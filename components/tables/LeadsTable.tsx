@@ -18,7 +18,6 @@ export interface LeadItem {
   numericValue: number;
   source: "Government Portal" | "Inbound Call" | "Direct Referral" | "Annual Renewal";
   status: "New Inquiry" | "Audit Scheduled" | "Under Review" | "Quotation Sent" | "Approved & Certified";
-  assignedInspector: string;
   createdDate: string;
 }
 
@@ -37,7 +36,6 @@ const initialLeads: LeadItem[] = [
     numericValue: 420000,
     source: "Annual Renewal",
     status: "Audit Scheduled",
-    assignedInspector: "Inspector Rajesh Sharma",
     createdDate: "2026-09-18",
   },
   {
@@ -54,7 +52,6 @@ const initialLeads: LeadItem[] = [
     numericValue: 280000,
     source: "Inbound Call",
     status: "Under Review",
-    assignedInspector: "Inspector Amitav Sen",
     createdDate: "2026-09-20",
   },
   {
@@ -71,7 +68,6 @@ const initialLeads: LeadItem[] = [
     numericValue: 890000,
     source: "Government Portal",
     status: "Quotation Sent",
-    assignedInspector: "Senior Eng. Harish Chander",
     createdDate: "2026-09-12",
   },
   {
@@ -88,7 +84,6 @@ const initialLeads: LeadItem[] = [
     numericValue: 350000,
     source: "Direct Referral",
     status: "New Inquiry",
-    assignedInspector: "Inspector Rajesh Sharma",
     createdDate: "2026-09-22",
   },
   {
@@ -105,7 +100,6 @@ const initialLeads: LeadItem[] = [
     numericValue: 540000,
     source: "Annual Renewal",
     status: "Approved & Certified",
-    assignedInspector: "Inspector Meera Joshi",
     createdDate: "2026-09-10",
   },
   {
@@ -122,7 +116,6 @@ const initialLeads: LeadItem[] = [
     numericValue: 195000,
     source: "Inbound Call",
     status: "Audit Scheduled",
-    assignedInspector: "Inspector Amitav Sen",
     createdDate: "2026-09-21",
   },
   {
@@ -139,7 +132,6 @@ const initialLeads: LeadItem[] = [
     numericValue: 180000,
     source: "Government Portal",
     status: "Approved & Certified",
-    assignedInspector: "Inspector Meera Joshi",
     createdDate: "2026-09-08",
   },
   {
@@ -156,7 +148,6 @@ const initialLeads: LeadItem[] = [
     numericValue: 310000,
     source: "Direct Referral",
     status: "Quotation Sent",
-    assignedInspector: "Senior Eng. Harish Chander",
     createdDate: "2026-09-19",
   },
 ];
@@ -204,8 +195,7 @@ export default function LeadsTable() {
         lead.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
         lead.facilityName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         lead.contactPerson.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        lead.equipmentType.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        lead.assignedInspector.toLowerCase().includes(searchTerm.toLowerCase());
+        lead.equipmentType.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesStatus = statusFilter === "ALL" || lead.status === statusFilter;
       const matchesFacility = facilityFilter === "ALL" || lead.facilityType === facilityFilter;
@@ -254,7 +244,6 @@ export default function LeadsTable() {
       numericValue: parseInt(newEstimatedValue.replace(/[^0-9]/g, "")) || 250000,
       source: "Government Portal",
       status: "New Inquiry",
-      assignedInspector: "Inspector Rajesh Sharma",
       createdDate: new Date().toISOString().split("T")[0],
     };
 
@@ -605,14 +594,6 @@ export default function LeadsTable() {
                 </p>
                 <p className="text-gray-500">{selectedLead.contactEmail}</p>
                 <p className="text-gray-500">{selectedLead.contactPhone}</p>
-              </div>
-
-              <div>
-                <span className="text-gray-400">Assigned Inspector</span>
-                <p className="font-semibold text-gray-800 dark:text-white text-sm mt-0.5">
-                  {selectedLead.assignedInspector}
-                </p>
-                <span className="text-xs text-brand-600 font-medium">NLETA Certified Field Officer</span>
               </div>
 
               <div className="col-span-2 rounded-xl bg-gray-50 p-3 dark:bg-gray-800/60">

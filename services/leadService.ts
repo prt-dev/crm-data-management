@@ -26,7 +26,8 @@ export const initialMockLeads: LeadItem[] = [
     source: "Annual Renewal",
     status: "Audit Scheduled",
     priority: "High",
-    assignedInspector: "Inspector Rajesh Sharma",
+    assignedBdeId: "BDE-201",
+    assignedBdeName: "Vikram Malhotra",
     location: "Greater Noida, Uttar Pradesh",
     createdDate: "2026-09-18",
     scheduledDate: "2026-09-28",
@@ -47,7 +48,8 @@ export const initialMockLeads: LeadItem[] = [
     source: "Inbound Call",
     status: "Under Review",
     priority: "High",
-    assignedInspector: "Inspector Amitav Sen",
+    assignedBdeId: "BDE-202",
+    assignedBdeName: "Pooja Singhania",
     location: "New Delhi, NCR",
     createdDate: "2026-09-20",
     scheduledDate: "2026-09-26",
@@ -68,7 +70,8 @@ export const initialMockLeads: LeadItem[] = [
     source: "Government Portal",
     status: "Quotation Sent",
     priority: "High",
-    assignedInspector: "Senior Eng. Harish Chander",
+    assignedBdeId: "BDE-201",
+    assignedBdeName: "Vikram Malhotra",
     location: "Lucknow, Uttar Pradesh",
     createdDate: "2026-09-12",
     scheduledDate: "2026-10-02",
@@ -89,7 +92,8 @@ export const initialMockLeads: LeadItem[] = [
     source: "Direct Referral",
     status: "New Inquiry",
     priority: "Medium",
-    assignedInspector: "Inspector Rajesh Sharma",
+    assignedBdeId: "BDE-203",
+    assignedBdeName: "Karthik Subramanian",
     location: "Gurugram, Haryana",
     createdDate: "2026-09-22",
     scheduledDate: "2026-10-05",
@@ -110,7 +114,8 @@ export const initialMockLeads: LeadItem[] = [
     source: "Annual Renewal",
     status: "Approved & Certified",
     priority: "Medium",
-    assignedInspector: "Inspector Meera Joshi",
+    assignedBdeId: "BDE-201",
+    assignedBdeName: "Vikram Malhotra",
     location: "Bengaluru, Karnataka",
     createdDate: "2026-09-10",
     scheduledDate: "2026-09-16",
@@ -131,7 +136,8 @@ export const initialMockLeads: LeadItem[] = [
     source: "Inbound Call",
     status: "Audit Scheduled",
     priority: "Low",
-    assignedInspector: "Inspector Amitav Sen",
+    assignedBdeId: "BDE-202",
+    assignedBdeName: "Pooja Singhania",
     location: "Jaipur, Rajasthan",
     createdDate: "2026-09-21",
     scheduledDate: "2026-09-30",
@@ -152,7 +158,6 @@ export const initialMockLeads: LeadItem[] = [
     source: "Government Portal",
     status: "Approved & Certified",
     priority: "High",
-    assignedInspector: "Inspector Meera Joshi",
     location: "Saket, New Delhi",
     createdDate: "2026-09-08",
     scheduledDate: "2026-09-14",
@@ -173,7 +178,6 @@ export const initialMockLeads: LeadItem[] = [
     source: "Direct Referral",
     status: "Quotation Sent",
     priority: "Medium",
-    assignedInspector: "Senior Eng. Harish Chander",
     location: "Faridabad, Haryana",
     createdDate: "2026-09-19",
     scheduledDate: "2026-10-08",
@@ -270,7 +274,7 @@ export const leadService = {
     if (!filters) return [...leads];
 
     return leads.filter((item) => {
-      // 1. Text Search across facility, person, email, equipment, inspector
+      // 1. Text Search across facility, person, email, equipment, BDE
       if (filters.search && filters.search.trim() !== "") {
         const query = filters.search.toLowerCase();
         const matchesQuery =
@@ -279,7 +283,7 @@ export const leadService = {
           item.contactEmail.toLowerCase().includes(query) ||
           item.contactPhone.toLowerCase().includes(query) ||
           item.equipmentType.toLowerCase().includes(query) ||
-          item.assignedInspector.toLowerCase().includes(query) ||
+          (item.assignedBdeName && item.assignedBdeName.toLowerCase().includes(query)) ||
           (item.location && item.location.toLowerCase().includes(query));
 
         if (!matchesQuery) return false;
