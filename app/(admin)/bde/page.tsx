@@ -503,12 +503,12 @@ export default function BdeViewPage() {
         title="Business Development Executive Directory"
         description="Monitor sales targets, client account management, and contract revenue closed across regions"
         columns={columns}
-        data={displayData as unknown as Record<string, unknown>[]}
+        data={displayData}
         searchPlaceholder="Search by executive name, employee code, region, designation..."
         filterable={true}
-        filterOptions={filterOptions as unknown as { label: string; value: string; field: string }[]}
+        filterOptions={filterOptions}
         initialPageSize={10}
-        onRowClick={(row) => setSelectedBde(row as unknown as BdeItem)}
+        onRowClick={(row) => setSelectedBde(row)}
         onAddRecord={() => router.push("/bde/create")}
       />
 

@@ -32,7 +32,7 @@ export interface DynamicTableProps<T> {
   onAddRecord?: () => void;
 }
 
-export default function DynamicTable<T extends Record<string, unknown>>({
+export default function DynamicTable<T extends object>({
   title = "CRM Records",
   description = "Manage, search, sort, and analyze your CRM data records",
   columns,
@@ -77,7 +77,7 @@ export default function DynamicTable<T extends Record<string, unknown>>({
       // 1. Search Query Match across all fields
       const matchesSearch =
         searchTerm === "" ||
-        Object.values(item).some((val) => {
+        Object.values(item as Record<string, unknown>).some((val) => {
           if (val === null || val === undefined) return false;
           return String(val).toLowerCase().includes(searchTerm.toLowerCase());
         });
@@ -87,7 +87,7 @@ export default function DynamicTable<T extends Record<string, unknown>>({
       if (activeFilter !== "ALL" && filterOptions.length > 0) {
         const option = filterOptions.find((opt) => opt.value === activeFilter);
         if (option && option.field) {
-          matchesFilter = String(item[option.field]) === activeFilter;
+          matchesFilter = String((item as Record<string, unknown>)[option.field as string]) === activeFilter;
         }
       }
 
@@ -99,8 +99,8 @@ export default function DynamicTable<T extends Record<string, unknown>>({
   const sortedData = useMemo(() => {
     if (!sortKey) return filteredData;
     return [...filteredData].sort((a, b) => {
-      const valA = a[sortKey];
-      const valB = b[sortKey];
+      const valA = (a as Record<string, unknown>)[sortKey];
+      const valB = (b as Record<string, unknown>)[sortKey];
 
       if (valA === valB) return 0;
       if (valA === null || valA === undefined) return 1;
@@ -279,7 +279,7 @@ export default function DynamicTable<T extends Record<string, unknown>>({
             {paginatedData.length > 0 ? (
               paginatedData.map((row, idx) => (
                 <tr
-                  key={row.id || idx}
+                  key={((row as Record<string, unknown>).id as string | number | undefined) ?? idx}
                   onClick={() => onRowClick && onRowClick(row)}
                   className={`transition-colors hover:bg-gray-50/70 dark:hover:bg-gray-800/40 ${
                     onRowClick ? "cursor-pointer" : ""
@@ -298,8 +298,8 @@ export default function DynamicTable<T extends Record<string, unknown>>({
                     >
                       {col.render
                         ? col.render(row, (currentPage - 1) * pageSize + idx)
-                        : row[col.key] !== undefined
-                        ? String(row[col.key])
+                        : (row as Record<string, unknown>)[col.key] !== undefined
+                        ? String((row as Record<string, unknown>)[col.key])
                         : "-"}
                     </td>
                   ))}

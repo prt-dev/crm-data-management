@@ -441,12 +441,12 @@ export default function TechniciansViewPage() {
         title="Field Inspection Engineers Roster"
         description="Monitor certified safety technicians, zone allocations, live audit assignments, and accreditation credentials"
         columns={columns}
-        data={displayData as unknown as Record<string, unknown>[]}
+        data={displayData}
         searchPlaceholder="Search by inspector name, badge, specialization, zone..."
         filterable={true}
-        filterOptions={filterOptions as unknown as { label: string; value: string; field: string }[]}
+        filterOptions={filterOptions}
         initialPageSize={10}
-        onRowClick={(row) => setSelectedTechnician(row as unknown as TechnicianItem)}
+        onRowClick={(row) => setSelectedTechnician(row)}
         onAddRecord={() => router.push("/technicians/create")}
       />
 
