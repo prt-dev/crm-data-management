@@ -19,6 +19,7 @@ import {
   TableIcon,
   UserCircleIcon,
   GroupIcon,
+  UserIcon,
 } from "../icons/index";
 import SidebarWidget from "./SidebarWidget";
 
@@ -88,6 +89,11 @@ const navItems: NavItem[] = [
     icon: <UserCircleIcon />,
     key: "clients",
     path: "/clients",
+  },
+  {
+    icon: <UserIcon />,
+    key: "bde",
+    path: "/bde",
   },
 ];
 

@@ -237,7 +237,7 @@ export default function ClientTable() {
                 isHeader
                 className="px-5 py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap"
               >
-                Company / Client
+                Association / Client
               </TableCell>
               <TableCell
                 isHeader
