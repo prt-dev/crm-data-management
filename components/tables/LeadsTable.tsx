@@ -93,14 +93,12 @@ export default function LeadsTable() {
       render: (row) => {
         const getBadgeClass = (status: string) => {
           switch (status) {
-            case "Approved & Certified":
-              return "bg-success-50 text-success-700 border-success-200 dark:bg-success-500/10 dark:text-success-400 dark:border-success-500/20";
-            case "Audit Scheduled":
-              return "bg-blue-light-50 text-blue-light-700 border-blue-light-200 dark:bg-blue-light-500/10 dark:text-blue-light-400 dark:border-blue-light-500/20";
-            case "Under Review":
-              return "bg-warning-50 text-warning-700 border-warning-200 dark:bg-warning-500/10 dark:text-warning-400 dark:border-warning-500/20";
-            case "Quotation Sent":
-              return "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-500/10 dark:text-purple-400 dark:border-purple-500/20";
+            case "Won":
+              return "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-400 dark:border-emerald-500/30";
+            case "Under Discussion":
+              return "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/15 dark:text-blue-400 dark:border-blue-500/30";
+            case "Lost":
+              return "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/15 dark:text-rose-400 dark:border-rose-500/30";
             default:
               return "bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700";
           }
@@ -152,10 +150,9 @@ export default function LeadsTable() {
       pageSizeOptions={[5, 10, 20]}
       filterOptions={[
         { label: "All Inquiries", value: "ALL", field: "status" },
-        { label: "Audit Scheduled", value: "Audit Scheduled", field: "status" },
-        { label: "Under Review", value: "Under Review", field: "status" },
-        { label: "Quotation Sent", value: "Quotation Sent", field: "status" },
-        { label: "Approved", value: "Approved & Certified", field: "status" },
+        { label: "Won", value: "Won", field: "status" },
+        { label: "Under Discussion", value: "Under Discussion", field: "status" },
+        { label: "Lost", value: "Lost", field: "status" },
       ]}
     />
   );

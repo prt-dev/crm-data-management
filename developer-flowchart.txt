@@ -1,0 +1,355 @@
+================================================================================
+   NATIONAL LIFT ESCALATOR TESTING AGENCY (NLETA) - CRM & SAFETY PLATFORM
+                  DEVELOPER TECHNICAL FLOWCHART & ARCHITECTURE
+================================================================================
+
+TABLE OF CONTENTS:
+1. Complete Developer System Flow (Mermaid & ASCII)
+2. Auth & Token Lifecycle Flow (Sign In, Token Save, Logout)
+3. Page Protection & Route Guard Flow (Logged In vs Logged Out)
+4. Data Fetching, In-Memory Caching & LocalStorage Sync Flow
+5. Reactive Observer Pattern & Real-Time Event Dispatch Flow
+6. Data Mutation & Cache Invalidation Lifecycle (CRUD)
+7. Logged-In vs Logged-Out Decision & Action Matrix
+
+================================================================================
+1. COMPLETE DEVELOPER SYSTEM FLOW
+================================================================================
+
+ASCII Diagram:
+-------------
+                           [ Incoming User Request ]
+                                      |
+                                      v
+                      +-------------------------------+
+                      | Client / Middleware Guard     |
+                      | Check Auth Token / Session    |
+                      +---------------+---------------+
+                                      |
+                 +--------------------+--------------------+
+                 |                                         |
+         [ Token Missing ]                         [ Token Valid ]
+                 |                                         |
+                 v                                         v
+    +-------------------------+               +-------------------------+
+    | Redirect to /signin     |               | Allow Protected Route   |
+    | (Store intended target) |               | (/dashboard, /leads...) |
+    +-------------------------+               +------------+------------+
+                                                           |
+                                                           v
+                                              +-------------------------+
+                                              | Component Mounts        |
+                                              | (Read Cache / Storage)  |
+                                              +------------+------------+
+                                                           |
+                                                           v
+                                              +-------------------------+
+                                              | Subscribe to Observer   |
+                                              | (Live Event Listeners)  |
+                                              +------------+------------+
+                                                           |
+                                                           v
+                                              +-------------------------+
+                                              | Render Optimized UI     |
+                                              | (Instant Cache First)   |
+                                              +-------------------------+
+
+Mermaid Diagram:
+----------------
+```mermaid
+flowchart TD
+    Req([🌐 User Requests Page URL]) --> Guard{"🛡️ Auth Guard & Middleware"}
+    
+    Guard -->|"No Token / Expired"| CheckPublic{"Is Public Route?<br/>(/signin, /signup, /login)"}
+    CheckPublic -->|"Yes"| RenderAuth["Render Auth Page (/signin, /signup)"]
+    CheckPublic -->|"No (Protected)"| RedirectLogin["Redirect to /signin<br/>(Save redirect_to param)"]
+
+    Guard -->|"Valid Token Found"| CheckAuthPage{"Visiting /signin or /signup?"}
+    CheckAuthPage -->|"Yes"| RedirectDash["Auto-Redirect to /dashboard"]
+    CheckAuthPage -->|"No"| RenderApp["Render Protected Route<br/>(/dashboard, /leads, /bde, /technicians...)"]
+
+    RenderApp --> CacheCheck{"📦 In-Memory Cache Available?"}
+    CacheCheck -->|"Cache Hit"| HydrateUI["Instant UI Render from Memory Cache"]
+    CacheCheck -->|"Cache Miss"| FetchStorage["Load from LocalStorage / Network API"]
+    FetchStorage --> SetCache["Populate In-Memory Cache"]
+    SetCache --> HydrateUI
+
+    HydrateUI --> Subscribe["📡 Subscribe to Live Event Observer<br/>(service.subscribe(callback))"]
+    
+    Subscribe --> MutateEvent{"🔄 Data Mutated Anywhere?"}
+    MutateEvent -->|"Yes (Create / Update / Delete)"| Notify["📢 Trigger notifySubscribers()"]
+    Notify --> ReRender["⚡ Reactive Re-Render (0 Page Reload)"]
+    
+    Subscribe --> Unmount(["🚪 Component Unmounts"])
+    Unmount --> CleanSub["🧹 Execute unsub() Cleanup"]
+```
+
+================================================================================
+2. AUTH & TOKEN LIFECYCLE FLOW
+================================================================================
+
+ASCII Diagram:
+-------------
+[ User Submits Credentials ] ──> [ Validate Input ] ──> [ Token Generated ]
+                                                               |
+                                                               v
+                                                    [ Save in localStorage / Cookie ]
+                                                    [ Key: 'nleta_auth_token'       ]
+                                                    [ Key: 'nleta_user_profile'     ]
+                                                               |
+                                                               v
+                                                    [ Set Global Auth State ]
+                                                               |
+                                                               v
+                                                    [ Redirect to /dashboard ]
+
+Mermaid Diagram:
+----------------
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as 👤 User / Developer
+    participant View as 🖥️ Auth Form (/signin)
+    participant AuthSvc as 🔐 AuthService
+    participant Storage as 💾 localStorage / Cookie
+    participant Router as 🧭 Next.js Router
+
+    User->>View: Enters Email & Password
+    View->>AuthSvc: login(credentials)
+    
+    alt Invalid Credentials
+        AuthSvc-->>View: ❌ Return Error (Invalid password/email)
+        View-->>User: Display Inline Error Toast
+    else Valid Credentials
+        AuthSvc->>AuthSvc: Generate JWT / Session Token
+        AuthSvc->>Storage: setItem('nleta_auth_token', token)
+        AuthSvc->>Storage: setItem('nleta_user_session', userObject)
+        AuthSvc->>AuthSvc: Set reactive isUserAuthenticated = true
+        AuthSvc-->>View: ✅ Return Success (User details + Token)
+        View->>Router: router.push('/dashboard' or redirectUrl)
+        Router-->>User: Render Dashboard Protected Screen
+    end
+
+    Note over User,Router: 🚪 LOGOUT FLOW
+    User->>View: Clicks "Sign Out"
+    View->>AuthSvc: logout()
+    AuthSvc->>Storage: removeItem('nleta_auth_token')
+    AuthSvc->>Storage: removeItem('nleta_user_session')
+    AuthSvc->>AuthSvc: Clear in-memory active cache
+    AuthSvc->>Router: router.push('/signin')
+    Router-->>User: Render Clean Sign-in Page
+```
+
+================================================================================
+3. PAGE PROTECTION & ROUTE GUARD FLOW
+================================================================================
+
+ASCII Diagram:
+-------------
+                    [ Route Navigation Triggered ]
+                                  |
+                                  v
+                  +-------------------------------+
+                  | Read Token from Storage       |
+                  | const token = getToken()      |
+                  +---------------+---------------+
+                                  |
+                  +---------------+---------------+
+                  |                               |
+          (Token Exists)                   (Token Null/Empty)
+                  |                               |
+                  v                               v
+    +---------------------------+   +---------------------------+
+    | Check Route Destination   |   | Check Route Destination   |
+    | - If /signin or /signup:  |   | - If Protected Route:     |
+    |   Redirect ➔ /dashboard   |   |   Redirect ➔ /signin      |
+    | - If Protected Route:     |   | - If Public Auth Route:   |
+    |   Allow Access ✅         |   |   Allow Access ✅         |
+    +---------------------------+   +---------------------------+
+
+Mermaid Diagram:
+----------------
+```mermaid
+flowchart TD
+    NavStart([User Hits Route: e.g. /leads/create]) --> GetToken["Read Token: localStorage.getItem('nleta_auth_token')"]
+
+    GetToken --> HasToken{"Is Token Present & Valid?"}
+
+    %% USER IS LOGGED IN
+    HasToken -->|"YES (Logged In)"| IsAuthRoute{"Is Route /signin or /signup?"}
+    IsAuthRoute -->|"Yes"| DashRedirect["Redirect to /dashboard<br/>(User already authenticated)"]
+    IsAuthRoute -->|"No"| RoleCheck{"Check Role Permissions<br/>(Admin / Sales / Inspector / HR)"}
+    RoleCheck -->|"Authorized"| RenderProtected["✅ Render Target Page with Data"]
+    RoleCheck -->|"Unauthorized Role"| RenderForbidden["⛔ 403 Forbidden / Not Found"]
+
+    %% USER IS NOT LOGGED IN
+    HasToken -->|"NO (Guest)"| IsPublic{"Is Route Public?<br/>(/signin, /signup, /login)"}
+    IsPublic -->|"Yes"| RenderAuthPage["✅ Render Sign In / Sign Up Form"]
+    IsPublic -->|"No (Trying to access protected)"| SaveIntended["Save Intended URL: ?redirect=/leads/create"]
+    SaveIntended --> RedirectLogin["Redirect ➔ /signin"]
+```
+
+================================================================================
+4. DATA FETCHING, IN-MEMORY CACHING & LOCALSTORAGE SYNC
+================================================================================
+
+ASCII Diagram:
+-------------
+[ Component Mounted ] 
+         |
+         v
++-------------------------------------------------------+
+| Check Service In-Memory Cache (RAM)                   |
+| if (this.memoryCache.length > 0) return memoryCache   |
++---------------------------+---------------------------+
+                            |
+            +---------------+---------------+
+            |                               |
+      (Cache Hit)                     (Cache Miss)
+            |                               |
+            v                               v
++-----------------------+   +------------------------------------+
+| Return instantly (0ms)|   | Read LocalStorage (Persistent)     |
+| Render UI immediately |   | localStorage.getItem(STORAGE_KEY)  |
++-----------------------+   +-----------------+------------------+
+                                              |
+                                              v
+                            +------------------------------------+
+                            | Parse JSON ➔ Save to Memory Cache  |
+                            | Render UI & Subscribe to Updates   |
+                            +------------------------------------+
+
+Mermaid Diagram:
+----------------
+```mermaid
+flowchart TD
+    Mount([Component Mounts in React]) --> CallSvc["Call Service: e.g. leadService.getAllLeads()"]
+
+    CallSvc --> CheckRAM{"1. Check In-Memory Array (RAM)"}
+
+    CheckRAM -->|"RAM Hit (Fastest)"| ReturnRAM["⚡ Return in-memory data (0ms latency)"]
+
+    CheckRAM -->|"RAM Miss (Empty)"| CheckStorage{"2. Check Persistent LocalStorage"}
+
+    CheckStorage -->|"Storage Hit"| ParseJSON["Parse JSON from Storage Key"]
+    ParseJSON --> PopulateRAM["Populate In-Memory Array in RAM"]
+    PopulateRAM --> ReturnRAM
+
+    CheckStorage -->|"Storage Empty"| LoadMock["3. Load Initial Mock Dataset (Bootstrap)"]
+    LoadMock --> SaveStorage["Save Initial Dataset to LocalStorage"]
+    SaveStorage --> PopulateRAM
+
+    ReturnRAM --> SetState["Component sets state: setLeads(data)"]
+    SetState --> SubscribeEvent["4. Subscribe: service.subscribe(loadData)"]
+    SubscribeEvent --> RenderComplete([✅ Complete UI Hydrated])
+```
+
+================================================================================
+5. REACTIVE OBSERVER PATTERN & REAL-TIME EVENT DISPATCH
+================================================================================
+
+ASCII Diagram:
+-------------
+[ Data Changed on Page A ] ──> [ service.createLead(payload) ]
+                                            |
+                                            v
+                               [ Save in Memory & Storage ]
+                                            |
+                                            v
+                               [ this.notifySubscribers() ]
+                                            |
+        +-----------------------------------+-----------------------------------+
+        |                                   |                                   |
+        v                                   v                                   v
+[ Page A Subscriber ]              [ Page B Subscriber ]              [ Sidebar / Badge ]
+- Local State Updated              - Leads Table Re-fetched           - Pipeline Count Recomputed
+- Re-renders (0ms)                 - Re-renders (0ms)                 - Re-renders (0ms)
+
+Mermaid Diagram:
+----------------
+```mermaid
+sequenceDiagram
+    autonumber
+    actor DevUser as 👤 User Action (e.g. Lead Form)
+    participant CompA as 🖥️ Page A (LeadForm.tsx)
+    participant Service as ⚙️ LeadService (Observer Subject)
+    participant Storage as 💾 localStorage
+    participant CompB as 🖥️ Page B (Dashboard.tsx)
+    participant CompC as 🖥️ Page C (LeadsTable.tsx)
+
+    Note over CompB,CompC: Components subscribe on mount
+    CompB->>Service: subscribe(loadLiveStats)
+    CompC->>Service: subscribe(loadLeads)
+
+    DevUser->>CompA: Submits "Register Lead"
+    CompA->>Service: createLead(newLeadInput)
+    
+    Service->>Service: Push to in-memory cache array
+    Service->>Storage: setItem('nleta_leads_data', JSON.stringify(leads))
+    
+    Service->>Service: notifySubscribers()
+    
+    par Live Event Broadcast
+        Service-->>CompB: 📢 Callback Triggered ➔ loadLiveStats()
+        CompB->>CompB: setState(newStats) ➔ Re-renders KPI Card
+    and
+        Service-->>CompC: 📢 Callback Triggered ➔ loadLeads()
+        CompC->>CompC: setState(newList) ➔ Table adds new row
+    end
+
+    CompA-->>DevUser: Show Success Toast ("Lead Created!")
+```
+
+================================================================================
+6. DATA MUTATION & CACHE INVALIDATION LIFECYCLE (CRUD)
+================================================================================
+
+Mermaid State Diagram:
+----------------------
+```mermaid
+stateDiagram-v2
+    [*] --> IdleState: Cache Hydrated in Memory
+
+    state "Mutation Operation (Create / Update / Delete)" as Mutate {
+        IdleState --> ValidateInput: User Submits Mutation
+        ValidateInput --> OptimisticUpdate: Valid Payload Confirmed
+        OptimisticUpdate --> UpdateMemoryCache: In-Memory Array Updated
+        UpdateMemoryCache --> SyncLocalStorage: Persistent Storage Synced
+    }
+
+    state "Event Notification & Invalidation" as Invalidate {
+        SyncLocalStorage --> NotifySubscribers: Trigger all registered callbacks
+        NotifySubscribers --> RecomputeDerivedStats: Recalculate KPIs & Totals
+        RecomputeDerivedStats --> RefreshUI: All subscribed components re-render
+    }
+
+    RefreshUI --> IdleState: Idle with Fresh Data
+
+    OptimisticUpdate --> Rollback: Storage Failure / Error
+    Rollback --> ShowError: Display Error Alert to User
+    ShowError --> IdleState: Revert to previous valid state
+```
+
+================================================================================
+7. LOGGED-IN VS LOGGED-OUT DECISION & ACTION MATRIX
+================================================================================
+
++-----------------------+-----------------------------+-----------------------------+
+| Action / State        | When User is LOGGED IN      | When User is LOGGED OUT     |
++-----------------------+-----------------------------+-----------------------------+
+| Access /signin        | Redirects to /dashboard     | Shows Sign In Form          |
+| Access /signup        | Redirects to /dashboard     | Shows Sign Up Form          |
+| Access /dashboard     | Renders Dashboard with Data | Redirects to /signin        |
+| Access /leads         | Renders Leads Pipeline      | Redirects to /signin        |
+| Access /bde           | Renders Sales Rep Directory | Redirects to /signin        |
+| Access /technicians   | Renders Inspectors Roster   | Redirects to /signin        |
+| Access /employees     | Renders Staff Directory     | Redirects to /signin        |
+| Token Storage         | 'nleta_auth_token' exists   | Token is null or deleted    |
+| In-Memory Cache       | Active & Populated in RAM   | Cleared on logout           |
+| Observer Listeners    | Subscriptions active        | Cleaned up on route unmount |
+| Data Writes (CRUD)    | Allowed & Persisted         | Blocked with Auth Error     |
++-----------------------+-----------------------------+-----------------------------+
+
+================================================================================
+                        END OF DEVELOPER FLOWCHART
+================================================================================

@@ -145,3 +145,158 @@ remove hard codes and convert them into simpler code in whole project
 - Replaced hardcoded static values in dashboard/page.tsx with live reactive subscriptions to leadService, assetService, bdeService, and technicianService.
 - Cleaned up commented code and unused references in Sidebar.tsx.
 - Streamlined navigation configurations and verified 0-error production build.
+
+Prompt 25:
+create following pages:-
+- bde profile
+- bde sales data, like leads and analysis
+- employe profile
+
+- Created BDE Executive Profile page at /bde/[id] with executive hero card, KPI metrics, tabbed sales pipeline, and client accounts.
+- Created dedicated BDE Sales Data & Pipeline Analysis page at /bde/[id]/sales with stage conversion funnel, bar chart, and filterable leads.
+- Created Employee Profile page at /employees/[id] with hero card, organizational details, station info, and verified safety certifications.
+- Updated row action links in BDE and Employees directory tables to navigate to their respective profile pages.
+
+Prompt 26:
+display the graph elements in half for desktops
+
+- Updated dashboard graphs to a responsive 2-column half-width layout on desktop (grid-cols-1 lg:grid-cols-2).
+- Updated analytics visual graph rows to 50%/50% half-width split on desktop.
+
+Prompt 27:
+update the headers and heading according to a sales person, who knows basic sales words
+
+- Updated all BDE and sales pages (/bde, /bde/[id], /bde/[id]/sales) to use standard, intuitive sales terms:
+  * "Sales Team & Account Executives" / "Sales Reps Directory" / "Add Sales Rep"
+  * "Sales Territory" (replacing region/operating jurisdiction)
+  * "Sales Target" / "Sales Quota" (replacing target quota / numeric target)
+  * "Closed Revenue" / "Total Closed Sales" (replacing achieved revenue)
+  * "Win Rate" / "Close Rate" (replacing conversion rate)
+  * "Deals Won" / "Won Deals" (replacing closed contracts count)
+  * "Active Leads & Pipeline" / "Opportunities in Pipeline"
+  * "Sales Pipeline Funnel (Deals by Stage)" with clear stages: New Leads, Scheduled, Under Review, Proposal Sent, Won Deals.
+- Updated Sidebar navigation with "Sales Team", "Sales Reps Directory", and "Add Sales Rep".
+
+Prompt 28:
+create dashboard pages for following:-
+- sales rep
+- employee
+- technician
+
+and replace technician word with inspection inspector
+
+- Created dedicated Sales Rep Dashboard at /bde/dashboard with target progress banner, rep switcher, pipeline funnel breakdown, monthly closed deals chart, leaderboard, and active opportunities table.
+- Created dedicated Employee Dashboard at /employees/dashboard with workforce KPIs, department distribution chart, safety certification tracker, and staff roster.
+- Created dedicated Inspection Inspector Dashboard at /technicians/dashboard with certified inspector KPIs, active site audits, monthly audit progression chart, zone allocation summary, and dynamic inspectors directory.
+- Replaced "Technician" terminology with "Inspection Inspector" across sidebar navigation, breadcrumbs, headers, metric cards, create/edit pages, and created inspector profile at /technicians/[id].
+- Added role dashboards quick-access strip on main Admin Dashboard (/dashboard).
+
+Prompt 29:
+can't access property "toString", stats.activeEmployees is undefined
+
+- Fixed property naming on Employee Dashboard (/employees/dashboard) from stats.activeEmployees to stats.activeStaff, stats.onFieldDuty, and stats.departmentsCount to align with EmployeeStats interface.
+- Aligned department breakdown and column mappings (workLocation, salaryBand) across Employee Dashboard.
+- Audited and verified property names on Inspector Dashboard (/technicians/dashboard) and Inspector Profile (/technicians/[id]) to match TechnicianItem and TechnicianStats interfaces.
+
+Prompt 30:
+create a flow chart diagram as any type user perspective for my project
+
+- Created comprehensive multi-perspective architectural and functional flowchart diagrams (Mermaid format) covering:
+  1. Multi-Actor Ecosystem & Role Interactions
+  2. Perspective 1: Sales Representative / BDE Flow (Lead -> Opportunity -> Quote -> Won Deal)
+  3. Perspective 2: Inspection Inspector / Field Engineer Flow (Dispatch -> On-Site Testing -> Safety Scoring -> Certification)
+  4. Perspective 3: Admin & Executive Leadership Flow (Governance, Global KPIs, Revenue & Compliance Oversight)
+  5. Perspective 4: Employee & HR Operations Flow (Staff Lifecycle, Accreditation Tracking, Roster Management)
+  6. Perspective 5: Client & Facility Manager Flow (Asset Intake, Audit Readiness, Certified Operations)
+  7. End-to-End Operational Lifecycle & Data State Machine.
+
+Prompt 31:
+make flowchart txt file
+
+- Generated flowchart.txt at project root containing all user-perspective ASCII flowcharts, Mermaid diagram definitions, and end-to-end operational lifecycle specifications.
+
+Prompt 32:
+create a flowchart diagram file as developer points, like save user token,  page protection, fetch data, catche data when what to do when logged in or not
+
+- Created developer-flowchart.txt at project root containing detailed developer architecture flowcharts (ASCII and Mermaid sequence/flow charts):
+  1. Complete Developer System Flow (Guard, Cache, Storage, Observer)
+  2. Auth & Token Lifecycle Flow (Token Generation, LocalStorage Persistence, Invalidation & Logout)
+  3. Route Protection & Middleware Guard Flow (Handling Logged In vs Logged Out navigation)
+  4. Data Fetching & Multi-Tier Caching Flow (RAM Cache-First, LocalStorage sync, Mock bootstrap)
+  5. Reactive Observer Pattern & Real-Time Event Dispatch Flow (Service subscriptions, 0ms live UI re-rendering)
+  6. Data Mutation & Cache Invalidation Lifecycle (CRUD State Machine)
+  7. Logged-In vs Logged-Out Action & State Decision Matrix.
+
+Prompt 33:
+create a flowchart diagram using logical elements like square, rhombus, parallelogram, etc with each steps when a page renders, which data to be fetched, what my program flow is, etc for each module
+
+- Created modules-program-flowchart.txt at project root providing detailed module-by-module program execution flowcharts using standardized logical shapes:
+  * Terminator ([START/END])
+  * Square/Rectangle [Process / Render / Compute]
+  * Rhombus/Diamond {Decision / Condition / Auth Check}
+  * Parallelogram [/Input / Output / User Actions/]
+  * Double-Box [[Subroutines / Service Calls]]
+  * Cylinder [(LocalStorage / In-Memory Cache Store)]
+- Detailed program render lifecycle and data fetching paths across all 10 project modules:
+  1. Global Layout & Route Guard Lifecycle
+  2. Main Dashboard Module (/dashboard)
+  3. Leads & Pipeline Module (/leads, /leads/create)
+  4. Clients & Corporate Accounts Module (/clients, /clients/create)
+  5. Client Assets & Equipment Units (/client-assets)
+  6. Sales Team & BDE Deep-Dive (/bde, /bde/[id], /bde/dashboard)
+  7. Inspection Inspectors & Safety Audits (/technicians, /technicians/dashboard)
+  8. Employees & Workforce Management (/employees, /employees/dashboard)
+Prompt 34:
+create list of required api based on pages
+
+- Created comprehensive REST API specification file `api-endpoints-specification.txt` at project root covering all 25 application pages and modules:
+  1. Authentication & Session APIs (/signin, /signup, /login)
+  2. Main Agency Dashboard APIs (/dashboard)
+  3. Leads & Inquiry Pipeline APIs (/leads, /leads/create, /leads/[id]/edit)
+  4. Clients & Corporate Accounts APIs (/clients, /clients/create, /clients/[id]/edit)
+  5. Client Assets & Equipment Units APIs (/client-assets, /client-assets/create, /client-assets/[id]/edit)
+  6. Sales Team (BDE) & Sales Dashboard APIs (/bde, /bde/[id], /bde/dashboard)
+  7. Inspection Inspectors & Safety Operations APIs (/technicians, /technicians/dashboard)
+  8. Employees & Workforce Management APIs (/employees, /employees/dashboard)
+  9. Business Intelligence & Macro Analytics APIs (/analytics)
+  10. Page-to-API Quick Mapping Matrix with HTTP methods, URL paths, query parameters, payloads, and response structures.
+
+Prompt 35:
+put dummy data in separate file for respective modules
+
+- Created dedicated modular data directory `data/` isolating all mock datasets from service business logic:
+  * `data/leadsData.ts` -> initialMockLeads (8 lift & escalator sales leads)
+  * `data/clientsData.ts` -> initialMockClients (6 enterprise client accounts)
+  * `data/assetsData.ts` -> initialMockAssets (7 registered elevator & escalator equipment units)
+  * `data/bdeData.ts` -> initialMockBdes (6 sales executives with targets & metrics)
+  * `data/techniciansData.ts` -> initialMockTechnicians (6 certified field inspection inspectors)
+  * `data/employeesData.ts` -> initialEmployees (8 organizational staff records across all departments)
+  * `data/index.ts` -> central barrel export for all datasets.
+- Refactored `services/leadService.ts`, `services/clientService.ts`, `services/assetService.ts`, `services/bdeService.ts`, `services/technicianService.ts`, and `services/employeeService.ts` to import mock data cleanly from `@/data/*`.
+- Verified TypeScript compilation and full Next.js production build (`npm run build`) passed with 0 errors across all 25 routes.
+
+Prompt 36:
+lead states are 
+won, under discussion, lost
+with green, blue, red color respectively
+
+- Refactored Lead states and lifecycle across the entire system to:
+  * "Won" -> Green (Emerald badge / dot)
+  * "Under Discussion" -> Blue (Blue badge / dot)
+  * "Lost" -> Red (Rose badge / dot)
+- Updated TypeScript types in `types/lead.ts`:
+  * `LeadStatus`: `"Won" | "Under Discussion" | "Lost"`
+  * `LeadStats`: `wonCount`, `underDiscussionCount`, `lostCount`, `conversionRate`, `statusBreakdown`.
+- Updated dataset in `data/leadsData.ts` to assign realistic Won, Under Discussion, and Lost statuses across all 8 mock records.
+- Updated `services/leadService.ts`: bumped storage key to `nleta_crm_leads_v2`, updated stats calculation, and reactive observer notification.
+- Updated `components/leads/LeadForm.tsx` with new 3-state selector defaulting to "Under Discussion".
+- Updated `components/tables/LeadsTable.tsx` with color-coded badges and filtering for Won (Green), Under Discussion (Blue), Lost (Red).
+- Updated `app/(admin)/leads/page.tsx`:
+  * DynamicTable badges & filter dropdowns
+  * Quick Filter pills with real-time count badges
+  * MetricCards (Won Deals, Under Discussion)
+  * Quick-view drawer fast status transition buttons with active color highlights.
+- Updated `app/(admin)/bde/dashboard/page.tsx` and `app/(admin)/bde/[id]/sales/page.tsx` with 3-stage funnel metrics and interactive stage filter cards.
+- Updated `app/(admin)/dashboard/page.tsx` lead KPI metrics.
+- Updated `api-endpoints-specification.txt` schemas for Leads API.
+- Verified 0-error TypeScript compilation and full production build (`npm run build`).

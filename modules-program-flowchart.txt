@@ -1,0 +1,685 @@
+================================================================================
+   NATIONAL LIFT ESCALATOR TESTING AGENCY (NLETA) - CRM & SAFETY PLATFORM
+         MODULE-BY-MODULE PROGRAM FLOWCHART & LOGICAL EXECUTION FLOW
+================================================================================
+
+FLOWCHART SYMBOLOGY & LOGICAL SHAPES GUIDE:
+-------------------------------------------
+  ( [START / END] )   : Terminator (Oval / Capsule) - Mount / Unmount / Action Start
+  [  PROCESS / EXEC ] : Rectangle (Square / Box)   - State updates, UI rendering, calculations
+  {   DECISION / IF } : Rhombus (Diamond)          - Condition checks, validation, cache hit/miss
+  [/ INPUT / OUTPUT /]: Parallelogram              - User inputs, form submit, toast, URL params
+  [[   SUBROUTINE   ]]: Double-Border Box          - Service calls, API fetch, background handlers
+  [( DATABASE / STORE)]: Cylinder                  - LocalStorage, In-memory cache, Observer state
+
+================================================================================
+TABLE OF CONTENTS:
+================================================================================
+1. Module 1: Global App Layout & Navigation Lifecycle (/ (admin) layout)
+2. Module 2: Main Agency Dashboard Program Flow (/dashboard)
+3. Module 3: Leads & Inquiry Pipeline Module Flow (/leads, /leads/create)
+4. Module 4: Clients & Corporate Accounts Module Flow (/clients, /clients/create)
+5. Module 5: Client Assets & Equipment Units Flow (/client-assets)
+6. Module 6: Sales Team & BDE Deep-Dive Flow (/bde, /bde/[id], /bde/dashboard)
+7. Module 7: Inspection Inspectors & Safety Audits Flow (/technicians, /technicians/dashboard)
+8. Module 8: Employees & Workforce Management Flow (/employees, /employees/dashboard)
+9. Module 9: Business Analytics & BI Program Flow (/analytics)
+10. Module 10: Auth & Session Token Lifecycle (/signin, /signup)
+
+================================================================================
+1. MODULE 1: GLOBAL APP LAYOUT & NAVIGATION LIFECYCLE
+================================================================================
+
+ASCII Diagram:
+-------------
+                     ( [ App Route Requested ] )
+                                  |
+                                  v
+                    [/ URL Path: window.pathname /]
+                                  |
+                                  v
+               < Is User Authenticated? (Token Valid) >
+                                  |
+                 +----------------+----------------+
+                 | NO                              | YES
+                 v                                 v
+        [ Redirect to /signin ]           [ Hydrate App Layout ]
+                                                   |
+                                                   v
+                                       [[ Sync Active Submenu ]]
+                                       [ getActiveModuleKey(pathname) ]
+                                                   |
+                                                   v
+                                       < Sidebar Collapsed? >
+                                                   |
+                             +---------------------+---------------------+
+                             | YES                                       | NO
+                             v                                           v
+                   [ Render Icon-Only Bar ]                    [ Render Full Sidebar ]
+                             |                                           |
+                             +---------------------+---------------------+
+                                                   |
+                                                   v
+                                       [/ Render Children Page /]
+                                                   |
+                                       ( [ Layout Render Complete ] )
+
+Mermaid Diagram:
+----------------
+```mermaid
+flowchart TD
+    Start(["([ START: App Route Requested ])"]) --> InPath[/"[/ Input: window.pathname /]"/]
+    
+    InPath --> AuthCheck{"{ Rhombus: Auth Token Valid in Storage? }"}
+    
+    AuthCheck -->|"NO (Guest)"| RedirectLogin["[ Process: Redirect ➔ /signin ]"]
+    
+    AuthCheck -->|"YES (Authenticated)"| HydrateLayout["[ Process: Hydrate AdminLayout.tsx ]"]
+    
+    HydrateLayout --> SyncSubmenu[["[[ Subroutine: getActiveModuleKey(pathname) ]]"]]
+    
+    SyncSubmenu --> SetOpenSubmenus["[ Process: setOpenSubmenus({ [activeKey]: true }) ]"]
+    
+    SetOpenSubmenus --> ThemeCheck{"{ Rhombus: Check Theme Preference }"}
+    ThemeCheck -->|"Dark Mode"| ApplyDark["[ Process: Add 'dark' class to <html> ]"]
+    ThemeCheck -->|"Light Mode"| ApplyLight["[ Process: Remove 'dark' class ]"]
+    
+    ApplyDark --> RenderChildren[/"[/ Output: Render Target Page Component /]"/]
+    ApplyLight --> RenderChildren
+    
+    RenderChildren --> EndLayout(["([ END: Layout Render Complete ])"])
+```
+
+================================================================================
+2. MODULE 2: MAIN AGENCY DASHBOARD PROGRAM FLOW (/dashboard)
+================================================================================
+
+ASCII Diagram:
+-------------
+                     ( [ Mount: /dashboard ] )
+                                  |
+                                  v
+                 [[ Execute Promise.all(Fetch Data) ]]
+                 - leadService.getLeadStats()
+                 - assetService.getAssetStats()
+                 - bdeService.getBdeStats()
+                 - technicianService.getTechnicianStats()
+                                  |
+                                  v
+                    < Data Successfully Fetched? >
+                                  |
+                 +----------------+----------------+
+                 | NO                              | YES
+                 v                                 v
+        [ Show Error Toast ]              [ Update React States ]
+                                          - setLeadStats(leads)
+                                          - setAssetStats(assets)
+                                          - setBdeStats(bdes)
+                                          - setTechStats(techs)
+                                                   |
+                                                   v
+                                      [[ Subscribe to Observers ]]
+                                      - leadService.subscribe()
+                                      - assetService.subscribe()
+                                      - bdeService.subscribe()
+                                      - technicianService.subscribe()
+                                                   |
+                                                   v
+                                      [ Render Role Dashboard Strip ]
+                                      [ Render 4 KPI Metric Cards   ]
+                                      [ Render 50%/50% Desktop Grid ]
+                                        • Equipment Audits BarChart
+                                        • Revenue & Pipeline Chart
+                                      [ Render Leads Data Table     ]
+                                                   |
+                                                   v
+                                      < Live Data Mutated Elsewhere? >
+                                                   |
+                                 +-----------------+-----------------+
+                                 | YES                               | NO
+                                 v                                   v
+                      [[ Observer Triggers ]]               ( [ Idle & Interactive ] )
+                      [ Auto-Refresh Without Reload ]
+                                 |
+                                 v
+                      [ UI Re-Renders with Fresh Data ]
+
+Mermaid Diagram:
+----------------
+```mermaid
+flowchart TD
+    StartDash(["([ START: Component Mounts /dashboard ])"]) --> CallServices[["[[ Subroutine: Promise.all() Fetch 4 Services ]]"]]
+    
+    CallServices --> S1[("[( leadService.getLeadStats() )]")]
+    CallServices --> S2[("[( assetService.getAssetStats() )]")]
+    CallServices --> S3[("[( bdeService.getBdeStats() )]")]
+    CallServices --> S4[("[( technicianService.getTechnicianStats() )]")]
+    
+    S1 & S2 & S3 & S4 --> CheckFetch{"{ Rhombus: Data Received Successfully? }"}
+    
+    CheckFetch -->|"NO"| ErrToast[/"[/ Output: Error Toast /]"/]
+    
+    CheckFetch -->|"YES"| SetStates["[ Process: setState for Leads, Assets, BDEs, Techs ]"]
+    
+    SetStates --> SubObservers[["[[ Subroutine: Attach 4 Event Subscriptions ]]"]]
+    
+    SubObservers --> RenderRoleStrip[/"[/ Output: Role Dashboards Quick Launch Strip /]"/]
+    
+    RenderRoleStrip --> RenderMetrics["[ Process: Compute & Render 4 KPI Cards ]"]
+    
+    RenderMetrics --> RenderGrid50["[ Process: Render 50%/50% Desktop Visual Grid ]<br/>• Monthly Equipment Audits BarChart<br/>• Overall Safety Compliance Radial Chart"]
+    
+    RenderGrid50 --> RenderLeadsTable[/"[/ Output: Render Recent Leads Dynamic Table /]"/]
+    
+    RenderLeadsTable --> LiveEvent{"{ Rhombus: Data Mutated in Any Tab/Module? }"}
+    
+    LiveEvent -->|"YES (Event Fired)"| ReloadStats[["[[ Subroutine: loadLiveStats() Triggered ]]"]]
+    ReloadStats --> SetStates
+    
+    LiveEvent -->|"NO (Unmounted)"| Cleanup(["([ END: Execute unsub() Cleanups ])"])
+```
+
+================================================================================
+3. MODULE 3: LEADS & INQUIRY PIPELINE MODULE FLOW (/leads, /leads/create)
+================================================================================
+
+ASCII Diagram:
+-------------
+               ( [ User Enters Leads Module ] )
+                              |
+               +--------------+--------------+
+               |                             |
+               v                             v
+     [ Access /leads ]             [ Access /leads/create ]
+               |                             |
+               v                             v
+     [[ leadService.getAll() ]]    [/ Input: Fill Lead Form /]
+               |                   - Facility Name & Type
+               v                   - Units Count & Audit Type
+     < Filter / Search Query? >    - Deal Value (₹) & BDE Rep
+               |                             |
+     +---------+---------+                   v
+     | YES               | NO      < Valid Form Payload? >
+     v                   v                   |
+[ Filter Array ]  [ Full Array ]   +---------+---------+
+     |                   |         | NO                | YES
+     +---------+---------+         v                   v
+               |             [ Inline Errors ] [[ leadService.create() ]]
+               v                                       |
+    [/ Render Dynamic Table /]                         v
+    - Lead ID, Facility, Deal Value            [( Save in Storage )]
+    - Pipeline Stage Badge (1 of 5)                    |
+    - Action Buttons & Detail Drawer                   v
+               |                               [[ notifySubscribers() ]]
+               v                                       |
+    ( [ View Pipeline Active ] )                       v
+                                               [/ Show Success Toast /]
+                                               [ Redirect to /leads ]
+
+Mermaid Diagram:
+----------------
+```mermaid
+flowchart TD
+    StartLead(["([ START: Leads Module Accessed ])"]) --> RouteChoice{"{ Rhombus: Target Route? }"}
+
+    %% View All Leads Flow
+    RouteChoice -->|"/leads (Table View)"| FetchLeads[["[[ Subroutine: leadService.getAllLeads() ]]"]]
+    FetchLeads --> CacheCheck{"{ Rhombus: In-Memory Cache Populated? }"}
+    CacheCheck -->|"YES"| MemReturn["[ Process: Instant Memory Return ]"]
+    CacheCheck -->|"NO"| StorageRead[("[( Read LocalStorage 'nleta_leads_data' )]")]
+    StorageRead --> MemReturn
+
+    MemReturn --> FilterLogic{"{ Rhombus: Stage Filter or Search Applied? }"}
+    FilterLogic -->|"Filter Applied"| FilterArray["[ Process: leads.filter(l => l.status === stage) ]"]
+    FilterLogic -->|"Show All"| FullArray["[ Process: displayData = allLeads ]"]
+
+    FilterArray & FullArray --> RenderTable[/"[/ Output: Render DynamicTable with 5 Stage Badges /]"/]
+    RenderTable --> LeadRowClick{"{ Rhombus: User Clicks Row? }"}
+    LeadRowClick -->|"YES"| OpenDrawer[/"[/ Output: Slide-Out Lead Details & Assign BDE /]"/]
+    LeadRowClick -->|"NO"| IdleLeads(["([ END: Leads View Ready ])"])
+
+    %% Create Lead Flow
+    RouteChoice -->|"/leads/create (Form)"| InputForm[/"[/ Input: User Fills Facility, Value, Rep /]"/]
+    InputForm --> ValidateForm{"{ Rhombus: Validate Mandatory Fields }"}
+    ValidateForm -->|"Invalid"| FormError[/"[/ Output: Show Validation Error Message /]"/]
+    ValidateForm -->|"Valid"| CallCreate[["[[ Subroutine: leadService.createLead(payload) ]]"]]
+    CallCreate --> SyncStore[("[( Save to LocalStorage )]")]
+    SyncStore --> Broadcast["[ Process: Trigger this.notifySubscribers() ]"]
+    Broadcast --> SuccessToast[/"[/ Output: Success Notification /]"/]
+    SuccessToast --> NavBack["[ Process: router.push('/leads') ]"]
+```
+
+================================================================================
+4. MODULE 4: CLIENTS & CORPORATE ACCOUNTS MODULE FLOW (/clients, /clients/create)
+================================================================================
+
+ASCII Diagram:
+-------------
+                     ( [ Access /clients ] )
+                                |
+                                v
+               [[ Fetch Clients, BDEs & Technicians ]]
+               - clientService.getAllClients()
+               - bdeService.getAllBdes()
+               - technicianService.getAllTechnicians()
+                                |
+                                v
+               [ Hydrate Dynamic Client Table ]
+               - Company Name, Code, Sector
+               - Contract Status & Value (₹)
+               - Assigned BDE & Assigned Inspector Badges
+                                |
+                                v
+                  < User Triggers Row Action? >
+                                |
+             +------------------+------------------+
+             | Assign BDE                          | Assign Inspector
+             v                                     v
+  [/ Select BDE Rep /]                  [/ Select Field Inspector /]
+             |                                     |
+             v                                     v
+  [[ bdeClientService.assign() ]]       [[ clientTechnicianService.assign() ]]
+             |                                     |
+             v                                     v
+  [( Update Client Record )]            [( Update Client Record )]
+             |                                     |
+             +------------------+------------------+
+                                |
+                                v
+                    [[ notifySubscribers() ]]
+                    [/ Show Success Toast /]
+
+Mermaid Diagram:
+----------------
+```mermaid
+flowchart TD
+    StartClient(["([ START: Clients Module Mounted ])"]) --> ParallelFetch[["[[ Subroutine: Promise.all() Multi-Service Fetch ]]"]]
+    
+    ParallelFetch --> C1[("[( clientService.getAllClients() )]")]
+    ParallelFetch --> C2[("[( bdeService.getAllBdes() )]")]
+    ParallelFetch --> C3[("[( technicianService.getAllTechnicians() )]")]
+    
+    C1 & C2 & C3 --> RenderClientTable[/"[/ Output: Render Clients Table with Dual Badges /]"/]
+
+    RenderClientTable --> ActionBranch{"{ Rhombus: User Action Selected? }"}
+
+    ActionBranch -->|"Assign BDE Rep"| SelectBde[/"[/ Input: Select Sales Rep Dropdown /]"/]
+    SelectBde --> ExecBdeAssign[["[[ Subroutine: bdeClientService.assignBdeToClient() ]]"]]
+    ExecBdeAssign --> SyncClientStore[("[( LocalStorage Update )]")]
+    SyncClientStore --> NotifyClients["[ Process: notifySubscribers() ]"]
+
+    ActionBranch -->|"Assign Inspector"| SelectTech[/"[/ Input: Select Inspector Dropdown /]"/]
+    SelectTech --> ExecTechAssign[["[[ Subroutine: clientTechnicianService.assignTechnician() ]]"]]
+    ExecTechAssign --> SyncClientStore
+
+    ActionBranch -->|"Create New Client"| CreateClientPage["[ Process: router.push('/clients/create') ]"]
+    
+    NotifyClients --> SuccessToast[/"[/ Output: Show Assignment Toast /]"/]
+    SuccessToast --> EndClients(["([ END: Table Live Updated ])"])
+```
+
+================================================================================
+5. MODULE 5: CLIENT ASSETS & EQUIPMENT UNITS FLOW (/client-assets)
+================================================================================
+
+ASCII Diagram:
+-------------
+                  ( [ Access /client-assets ] )
+                                |
+                                v
+               [[ assetService.getAllAssets() ]]
+               [[ assetService.getAssetStats() ]]
+                                |
+                                v
+               [ Compute Category Breakdown ]
+               - Traction Passenger Lifts
+               - Heavy Transit Escalators
+               - Hydraulic Freight Elevators
+                                |
+                                v
+               < Inspection Status Filter? >
+                                |
+             +------------------+------------------+
+             | Certified                           | Due for Audit / In-Progress
+             v                                     v
+   [ Filter Status = Certified ]         [ Filter Status = Due / Testing ]
+             |                                     |
+             +------------------+------------------+
+                                |
+                                v
+               [/ Render Asset Inventory Table /]
+               - Asset ID, Equipment Type, Capacity, Speed
+               - Safety Compliance Score (e.g. 98%)
+               - Assigned Safety Inspector & Next Audit Date
+                                |
+                                v
+                  ( [ Asset Management Ready ] )
+
+Mermaid Diagram:
+----------------
+```mermaid
+flowchart TD
+    StartAsset(["([ START: Client Assets Module Mounted ])"]) --> FetchAssetData[["[[ Subroutine: assetService.getAllAssets() ]]"]]
+    
+    FetchAssetData --> AssetStatsCheck{"{ Rhombus: Calculate Aggregate Safety Score }"}
+    
+    AssetStatsCheck --> ComputeScore["[ Process: Calculate avg score: 98.4% ]"]
+    
+    ComputeScore --> ClassifyEquip["[ Process: Group by Equipment Classification ]<br/>• Traction Lifts<br/>• Escalators<br/>• Moving Walkways<br/>• Hydraulic Elevators"]
+    
+    ClassifyEquip --> RenderFilterBar[/"[/ Output: Status Filter (Certified, Due, In-Progress) /]"/]
+    
+    RenderFilterBar --> RenderAssetTable[/"[/ Output: Render Asset Grid & Action Buttons /]"/]
+    
+    RenderAssetTable --> InspectUnit{"{ Rhombus: Inspector Performs Audit? }"}
+    
+    InspectUnit -->|"YES"| UpdateScore[["[[ Subroutine: Update Safety Score & Status ]]"]]
+    UpdateScore --> SaveAssetStore[("[( Save to 'nleta_assets_data' )]")]
+    SaveAssetStore --> BroadcastAsset["[ Process: notifySubscribers() ]"]
+    BroadcastAsset --> RefreshAssetView["[ Process: Live Re-render without reload ]"]
+    
+    InspectUnit -->|"NO"| EndAsset(["([ END: Asset Management Idle ])"])
+```
+
+================================================================================
+6. MODULE 6: SALES TEAM & BDE DEEP-DIVE FLOW (/bde, /bde/[id], /bde/dashboard)
+================================================================================
+
+ASCII Diagram:
+-------------
+                     ( [ Sales Module Entry ] )
+                                 |
+        +------------------------+------------------------+
+        |                                                 |
+        v                                                 v
+  [ Access /bde ]                              [ Access /bde/dashboard ]
+        |                                                 |
+        v                                                 v
+  [[ bdeService.getAll() ]]                    [[ Fetch Reps & Leads ]]
+  [ Calculate Win Rate % ]                     [/ Rep Switcher Dropdown /]
+  [ Render Sales Reps Table ]                             |
+  [ Target vs Closed Revenue ]                            v
+        |                                      < Specific Rep Selected? >
+        v                                                 |
+  < Click Sales Rep Profile? >                 +----------+----------+
+        |                                      | ALL                 | Rep ID
+        v                                      v                     v
+  [ Access /bde/[id] ]                   [ Team Funnel ]       [ Rep Specific Funnel ]
+  - Executive Profile Card               [ Team Quota  ]       [ Rep Personal Quota  ]
+  - Sales Territory & Goal                     |                     |
+  - Tab 1: Sales Overview                      +----------+----------+
+  - Tab 2: Assigned Leads Pipeline                        |
+  - Tab 3: Assigned Corporate Accounts                    v
+                                               [ 5-Stage Funnel Graph ]
+                                               [ 50%/50% Desktop Grid ]
+                                               [ Filtered Deals Table ]
+
+Mermaid Diagram:
+----------------
+```mermaid
+flowchart TD
+    StartBDE(["([ START: Sales Module Selected ])"]) --> SubRoute{"{ Rhombus: Which Route? }"}
+
+    %% BDE Directory Flow
+    SubRoute -->|"/bde (Directory)"| FetchBdes[["[[ Subroutine: bdeService.getAllBdes() ]]"]]
+    FetchBdes --> RenderRepTable[/"[/ Output: Render Sales Team Directory with Win Rates /]"/]
+    RenderRepTable --> RowClick{"{ Rhombus: Click Rep Row? }"}
+    RowClick -->|"YES"| GoProfile["[ Process: router.push('/bde/[id]') ]"]
+
+    %% BDE Profile Flow
+    GoProfile --> FetchRepProfile[["[[ Subroutine: bdeService.getBdeById(id) ]]"]]
+    FetchRepProfile --> FetchAssigned[["[[ Subroutine: Fetch Assigned Leads & Clients ]]"]]
+    FetchAssigned --> RenderProfile[/"[/ Output: Render Sales Rep Profile & 3 Tab Panels /]"/]
+
+    %% BDE Dashboard Flow
+    SubRoute -->|"/bde/dashboard"| FetchDashData[["[[ Subroutine: Promise.all(Reps, Leads) ]]"]]
+    FetchDashData --> RepFilterSelect[/"[/ Input: Select Rep (ALL or Specific ID) /]"/]
+    RepFilterSelect --> CalcQuota["[ Process: Compute Quota Attainment % ]"]
+    CalcQuota --> BuildFunnel["[ Process: Compute 5-Stage Deals Funnel ]<br/>1. Inquiries ➔ 2. Scheduled ➔ 3. Review ➔ 4. Quote ➔ 5. Won"]
+    BuildFunnel --> RenderSalesGrid["[ Process: Render Half-Width Chart & Leaderboard ]"]
+    RenderSalesGrid --> RenderDealsTable[/"[/ Output: Active Opportunities Table /]"/]
+    RenderDealsTable --> EndBDE(["([ END: Sales Module Ready ])"])
+```
+
+================================================================================
+7. MODULE 7: INSPECTION INSPECTORS & SAFETY AUDITS FLOW (/technicians, /technicians/dashboard)
+================================================================================
+
+ASCII Diagram:
+-------------
+                 ( [ Inspectors Module Entry ] )
+                                |
+        +-----------------------+-----------------------+
+        |                                               |
+        v                                               v
+  [ Access /technicians ]                     [ Access /technicians/dashboard ]
+        |                                               |
+        v                                               v
+  [[ technicianService.getAll() ]]            [[ Fetch Inspectors & Assets ]]
+  [ Filter Status Tabs ]                      [ Render 4 Safety KPI Cards ]
+  • Available on Field                        • Certified Inspectors Headcount
+  • On-Site Inspection                        • Available for Dispatch
+  • In Transit                                • On-Site Testing Units
+  • On Leave                                  • Average Quality Score (4.9/5.0★)
+        |                                               |
+        v                                               v
+  [/ Field Inspectors Roster /]               [ Render 50%/50% Desktop Grid ]
+  - Badge ID & Specialization                 • Monthly Audits BarChart
+  - Zone Allocation & Rating                  • Territory Readiness Map
+        |                                               |
+        v                                               v
+  < Click "View Inspector"? >                 [/ Live Inspectors Directory /]
+        |                                               |
+        v                                               v
+  [ Access /technicians/[id] ]                ( [ Inspector Operations Active ] )
+  - Official Profile & Badge
+  - Assigned Client Installations
+
+Mermaid Diagram:
+----------------
+```mermaid
+flowchart TD
+    StartTech(["([ START: Inspection Inspector Module ])"]) --> TechRoute{"{ Rhombus: Choose View }"}
+
+    %% Roster Flow
+    TechRoute -->|"/technicians (Roster)"| FetchTechs[["[[ Subroutine: technicianService.getAllTechnicians() ]]"]]
+    FetchTechs --> TechStatusFilter{"{ Rhombus: Filter by Field Status }"}
+    TechStatusFilter --> RenderTechTable[/"[/ Output: Render Field Engineers Roster /]"/]
+    RenderTechTable --> TechRowClick{"{ Rhombus: Click Inspector Row? }"}
+    TechRowClick -->|"YES"| GoTechProfile["[ Process: router.push('/technicians/[id]') ]"]
+
+    %% Inspector Dashboard Flow
+    TechRoute -->|"/technicians/dashboard"| FetchTechDash[["[[ Subroutine: Promise.all(Inspectors, Assets) ]]"]]
+    FetchTechDash --> CalcSafetyStats["[ Process: Calculate Average Rating (4.9/5.0) ]"]
+    CalcSafetyStats --> RenderTechKPIs[/"[/ Output: Render 4 Field Readiness Metric Cards /]"/]
+    RenderTechKPIs --> RenderTechCharts["[ Process: Render Monthly Audits Graph & Zone Readiness ]"]
+    RenderTechCharts --> RenderTechDir[/"[/ Output: Render Dynamic Directory Table /]"/]
+    RenderTechDir --> EndTech(["([ END: Inspector Dashboard Ready ])"])
+```
+
+================================================================================
+8. MODULE 8: EMPLOYEES & WORKFORCE MANAGEMENT FLOW (/employees, /employees/dashboard)
+================================================================================
+
+ASCII Diagram:
+-------------
+                  ( [ Employee Module Entry ] )
+                                |
+        +-----------------------+-----------------------+
+        |                                               |
+        v                                               v
+  [ Access /employees ]                       [ Access /employees/dashboard ]
+        |                                               |
+        v                                               v
+  [[ employeeService.getAll() ]]              [[ employeeService.getStats() ]]
+  [[ employeeService.getStats() ]]            [ Render Workforce KPIs ]
+        |                                     • Total Staff Headcount
+        v                                     • Active On Duty (92.5%)
+  [ Department Quick Filter ]                 • On Field Duty Deployments
+  • Safety & Compliance                       • Departments Count (5 Units)
+  • Field Engineering                                   |
+  • Business Development                                v
+  • Quality Assurance                         [ Render 50%/50% Desktop Grid ]
+  • Operations & Logistics                    • Headcount by Department BarChart
+        |                                     • Safety Milestones Tracker
+        v                                       (BIS Licenses, PPE Induction)
+  [/ Staff Directory Table /]                           |
+  - Staff Code & Station Location                       v
+  - Full Name, Role & Dept                    [ Filter Roster by Department ]
+  - Salary Grade Band & Action                          |
+        |                                               v
+        v                                     [/ Active Staff Roster Table /]
+  ( [ Workforce Directory Ready ] )                     |
+                                                        v
+                                              ( [ HR Dashboard Active ] )
+
+Mermaid Diagram:
+----------------
+```mermaid
+flowchart TD
+    StartEmp(["([ START: Employee Module Mounted ])"]) --> EmpRouteChoice{"{ Rhombus: Select Route }"}
+
+    %% Directory Flow
+    EmpRouteChoice -->|"/employees (Directory)"| FetchEmpList[["[[ Subroutine: employeeService.getAllEmployees() ]]"]]
+    FetchEmpList --> DeptTabFilter{"{ Rhombus: Select Department Tab }"}
+    DeptTabFilter --> RenderEmpTable[/"[/ Output: Render Staff Directory Table /]"/]
+    RenderEmpTable --> ClickEmpRow{"{ Rhombus: User Clicks Row? }"}
+    ClickEmpRow -->|"YES"| NavEmpProfile["[ Process: router.push('/employees/[id]') ]"]
+
+    %% Employee Dashboard Flow
+    EmpRouteChoice -->|"/employees/dashboard"| FetchEmpStats[["[[ Subroutine: employeeService.getEmployeeStats() ]]"]]
+    FetchEmpStats --> MapStats["[ Process: Map activeStaff, onFieldDuty, departmentsCount ]"]
+    MapStats --> RenderEmpKPIs[/"[/ Output: Render 4 Workforce Metric Cards /]"/]
+    RenderEmpKPIs --> RenderEmpGrid50["[ Process: Render Department Distribution Chart & Compliance Tracker ]"]
+    RenderEmpGrid50 --> RenderFilteredRoster[/"[/ Output: Render Filterable Staff Dynamic Table /]"/]
+    RenderFilteredRoster --> EndEmp(["([ END: Employee Module Ready ])"])
+```
+
+================================================================================
+9. MODULE 9: BUSINESS ANALYTICS & BI PROGRAM FLOW (/analytics)
+================================================================================
+
+ASCII Diagram:
+-------------
+                     ( [ Access /analytics ] )
+                                 |
+                                 v
+               [[ Promise.all(Aggregate 4 Modules) ]]
+               - leadService.getAllLeads()
+               - assetService.getAllAssets()
+               - bdeService.getAllBdes()
+               - technicianService.getAllTechnicians()
+                                 |
+                                 v
+               [ Calculate High-Level Business Metrics ]
+               - Total Pipeline & Contract Value (₹)
+               - Revenue Conversion Rate (%)
+               - Certified Operational Fleet Ratio (%)
+               - Field Dispatch Utilization (%)
+                                 |
+                                 v
+               [ Render 50%/50% Desktop Visual Grid ]
+               • Multi-Month Revenue & Quota BarChart
+               • Quarterly Safety Audit Volume AreaChart
+               • Equipment Classification Breakdown Chart
+                                 |
+                                 v
+               [/ Render Macro Business Insights Table /]
+                                 |
+                                 v
+               ( [ BI Dashboard Interactive ] )
+
+Mermaid Diagram:
+----------------
+```mermaid
+flowchart TD
+    StartBI(["([ START: /analytics Page Mounted ])"]) --> FetchAllSources[["[[ Subroutine: Promise.all() Multi-Domain Ingestion ]]"]]
+    
+    FetchAllSources --> B1[("[( Leads Ingestion )]")]
+    FetchAllSources --> B2[("[( Assets Ingestion )]")]
+    FetchAllSources --> B3[("[( BDE Sales Ingestion )]")]
+    FetchAllSources --> B4[("[( Tech Inspector Ingestion )]")]
+    
+    B1 & B2 & B3 & B4 --> AggregateData["[ Process: Compute Macro Business KPIs ]<br/>• Total Revenue & Quota Inflow<br/>• Conversion & Win Rate Analytics<br/>• Field Resource Utilization"]
+    
+    AggregateData --> RenderBiKPIs[/"[/ Output: Render 4 Macro Executive Metric Cards /]"/]
+    
+    RenderBiKPIs --> RenderBiRow1["[ Process: Render Desktop 50%/50% Row 1 ]<br/>• Monthly Deals & Revenue BarChart<br/>• Annual Audit Volume AreaChart"]
+    
+    RenderBiRow1 --> RenderBiRow2["[ Process: Render Desktop 50%/50% Row 2 ]<br/>• Equipment Breakdown Chart<br/>• Zone Safety Compliance Map"]
+    
+    RenderBiRow2 --> EndBI(["([ END: BI Dashboard Interactive ])"])
+```
+
+================================================================================
+10. MODULE 10: AUTH & SESSION TOKEN LIFECYCLE (/signin, /signup, /login)
+================================================================================
+
+ASCII Diagram:
+-------------
+                     ( [ Access /signin ] )
+                                |
+                                v
+               < Token Already Exists in Storage? >
+                                |
+             +------------------+------------------+
+             | YES                                 | NO
+             v                                     v
+  [ Auto-Redirect to /dashboard ]        [/ Input: Email & Password /]
+                                                   |
+                                                   v
+                                         < Validate Credentials >
+                                                   |
+                                 +-----------------+-----------------+
+                                 | Invalid                           | Valid
+                                 v                                   v
+                      [/ Show Error Toast /]            [ Generate Auth Token ]
+                                                        [( Save in localStorage )]
+                                                        [ Key: 'nleta_auth_token' ]
+                                                                   |
+                                                                   v
+                                                        [/ Show Welcome Toast /]
+                                                        [ Redirect to /dashboard ]
+                                                                   |
+                                                                   v
+                                                        ( [ Session Active ] )
+
+Mermaid Diagram:
+----------------
+```mermaid
+flowchart TD
+    StartAuth(["([ START: Auth Flow Initiated ])"]) --> CheckExisting{"{ Rhombus: Token Already in LocalStorage? }"}
+    
+    CheckExisting -->|"YES (Already Logged In)"| AutoDash["[ Process: router.push('/dashboard') ]"]
+    
+    CheckExisting -->|"NO (Guest User)"| RenderForm[/"[/ Output: Render Centered Auth Card & Logo /]"/]
+    
+    RenderForm --> UserInputs[/"[/ Input: User enters Email & Password /]"/]
+    
+    UserInputs --> ValidateClient{"{ Rhombus: Client Regex & Empty Check }"}
+    
+    ValidateClient -->|"Invalid"| ShowInlineErr[/"[/ Output: Highlight Invalid Input Field /]"/]
+    
+    ValidateClient -->|"Valid"| SubmitAuth[["[[ Subroutine: authService.authenticate() ]]"]]
+    
+    SubmitAuth --> ServerCheck{"{ Rhombus: Credentials Match? }"}
+    
+    ServerCheck -->|"NO (Mismatch)"| AuthFailToast[/"[/ Output: 'Invalid email or password' Toast /]"/]
+    
+    ServerCheck -->|"YES (Success)"| GenToken["[ Process: Create JWT / Session Object ]"]
+    
+    GenToken --> SaveToken[("[( localStorage.setItem('nleta_auth_token', token) )]")]
+    SaveToken --> SaveUser[("[( localStorage.setItem('nleta_user', JSON.stringify(user)) )]")]
+    
+    SaveUser --> SetAuthTrue["[ Process: Set isUserAuthenticated = true ]"]
+    
+    SetAuthTrue --> SuccessWelcome[/"[/ Output: 'Welcome to NLETA CRM' Toast /]"/]
+    
+    SuccessWelcome --> RedirectTarget["[ Process: router.push('/dashboard') ]"]
+    
+    RedirectTarget --> EndAuth(["([ END: User Authenticated & Dashboard Ready ])"])
+```
+
+================================================================================
+                    END OF MODULES PROGRAM FLOWCHART SPECIFICATION
+================================================================================

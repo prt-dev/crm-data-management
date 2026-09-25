@@ -8,11 +8,11 @@ export default function CreateTechnicianPage() {
   return (
     <div className="space-y-6">
       <Breadcrumb
-        pageTitle="Register Field Inspection Engineer"
+        pageTitle="Register Inspection Inspector"
         items={[
-          { label: "Admin Portal", href: "/dashboard" },
-          { label: "Field Technicians", href: "/technicians" },
-          { label: "New Inspector Onboarding" },
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "Inspection Inspectors", href: "/technicians" },
+          { label: "Add Inspector" },
         ]}
       />
 

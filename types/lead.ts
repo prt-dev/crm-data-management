@@ -20,13 +20,7 @@ export type LeadSource =
   | "Annual Renewal"
   | "Website Form";
 
-export type LeadStatus =
-  | "New Inquiry"
-  | "Audit Scheduled"
-  | "Under Review"
-  | "Quotation Sent"
-  | "Approved & Certified"
-  | "Rejected / Inactive";
+export type LeadStatus = "Won" | "Under Discussion" | "Lost";
 
 export type LeadPriority = "High" | "Medium" | "Low";
 
@@ -63,10 +57,10 @@ export interface LeadStats {
   totalLeads: number;
   activePipelineValue: number;
   formattedPipelineValue: string;
-  scheduledAudits: number;
-  approvedCertified: number;
+  wonCount: number;
+  underDiscussionCount: number;
+  lostCount: number;
   conversionRate: string;
-  newInquiries: number;
   statusBreakdown: Record<LeadStatus, number>;
 }
 

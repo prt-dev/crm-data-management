@@ -61,23 +61,23 @@ export default function EditTechnicianPage({
     return (
       <div className="space-y-6">
         <Breadcrumb
-          pageTitle="Technician Not Found"
+          pageTitle="Inspector Not Found"
           items={[
-            { label: "Admin Portal", href: "/dashboard" },
-            { label: "Field Technicians", href: "/technicians" },
+            { label: "Dashboard", href: "/dashboard" },
+            { label: "Inspection Inspectors", href: "/technicians" },
             { label: "Not Found" },
           ]}
         />
         <div className="rounded-2xl border border-gray-200 bg-white p-12 text-center shadow-theme-xs dark:border-gray-800 dark:bg-gray-900">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-            Technician &ldquo;{techId}&rdquo; Not Found
+            Inspection Inspector &ldquo;{techId}&rdquo; Not Found
           </h2>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            This technician record may have been removed or the link is invalid.
+            This inspector record may have been removed or the link is invalid.
           </p>
           <div className="mt-6 flex justify-center">
             <Link href="/technicians">
-              <Button variant="primary">Return to Technicians</Button>
+              <Button variant="primary">Return to Inspectors Roster</Button>
             </Link>
           </div>
         </div>
@@ -90,14 +90,14 @@ export default function EditTechnicianPage({
       <Breadcrumb
         pageTitle={`Edit Inspector: ${technician.fullName} (${technician.badgeNumber})`}
         items={[
-          { label: "Admin Portal", href: "/dashboard" },
-          { label: "Field Technicians", href: "/technicians" },
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "Inspection Inspectors", href: "/technicians" },
           { label: `Edit ${technician.id}` },
         ]}
         actions={
           <Link href="/technicians">
             <Button variant="outline" size="sm">
-              Back to Technicians
+              Back to Inspectors
             </Button>
           </Link>
         }

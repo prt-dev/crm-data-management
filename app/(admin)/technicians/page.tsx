@@ -331,27 +331,34 @@ export default function TechniciansViewPage() {
 
       {/* Top Header & Breadcrumbs */}
       <Breadcrumb
-        pageTitle="Inspection Engineers & Field Technicians"
+        pageTitle="Inspection Inspectors & Field Engineers"
         items={[
-          { label: "Admin Portal", href: "/dashboard" },
-          { label: "Field Technicians" },
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "Inspection Inspectors" },
         ]}
         actions={
-          <Link href="/technicians/create">
-            <Button variant="primary" size="md">
-              <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-              </svg>
-              Register New Inspector
-            </Button>
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link href="/technicians/dashboard">
+              <Button variant="outline" size="md">
+                Inspector Dashboard
+              </Button>
+            </Link>
+            <Link href="/technicians/create">
+              <Button variant="primary" size="md">
+                <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Add Inspection Inspector
+              </Button>
+            </Link>
+          </div>
         }
       />
 
       {/* Metric Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard
-          title="Certified Technicians"
+          title="Certified Inspection Inspectors"
           value={stats?.totalTechnicians ?? "--"}
           change="BIS Accredited"
           changeType="increase"
@@ -403,7 +410,7 @@ export default function TechniciansViewPage() {
       {/* Filter Tabs */}
       <div className="flex flex-wrap items-center gap-2 border-b border-gray-200 pb-3 dark:border-gray-800">
         {[
-          { key: "ALL", label: "All Inspectors", count: technicians.length },
+          { key: "ALL", label: "All Inspection Inspectors", count: technicians.length },
           { key: "Available on Field", label: "Available on Field", count: stats?.statusBreakdown["Available on Field"] || 0 },
           { key: "On-Site Inspection", label: "On-Site Inspection", count: stats?.statusBreakdown["On-Site Inspection"] || 0 },
           { key: "In Transit", label: "In Transit", count: stats?.statusBreakdown["In Transit"] || 0 },
@@ -438,8 +445,8 @@ export default function TechniciansViewPage() {
 
       {/* Dynamic Table */}
       <DynamicTable
-        title="Field Inspection Engineers Roster"
-        description="Monitor certified safety technicians, zone allocations, live audit assignments, and accreditation credentials"
+        title="Field Inspection Inspectors Roster"
+        description="Monitor certified safety inspection inspectors, zone allocations, live audit assignments, and accreditation credentials"
         columns={columns}
         data={displayData}
         searchPlaceholder="Search by inspector name, badge, specialization, zone..."

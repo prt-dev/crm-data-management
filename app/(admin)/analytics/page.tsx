@@ -281,10 +281,10 @@ export default function BusinessAnalysisPage() {
         />
       </section>
 
-      {/* Row 2: Comprehensive Visual Analytics (2 Column Grid) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left: 12-Month Invoiced Revenue & Audit Volume Trajectory (8 cols) */}
-        <div className="lg:col-span-8 rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 shadow-theme-xs dark:border-gray-800 dark:bg-gray-900/60">
+      {/* Row 2: Comprehensive Visual Analytics (50% / 50% Half Grid for Desktops) */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Left: 12-Month Invoiced Revenue & Audit Volume Trajectory */}
+        <div className="w-full rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 shadow-theme-xs dark:border-gray-800 dark:bg-gray-900/60">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
             <div>
               <div className="flex items-center gap-2">
@@ -453,8 +453,8 @@ export default function BusinessAnalysisPage() {
           </div>
         </div>
 
-        {/* Right: Operational Equipment Health & Compliance Gauge (4 cols) */}
-        <div className="lg:col-span-4 rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 shadow-theme-xs dark:border-gray-800 dark:bg-gray-900/60 flex flex-col justify-between">
+        {/* Right: Operational Equipment Health & Compliance Gauge (50% on Desktop) */}
+        <div className="w-full rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 shadow-theme-xs dark:border-gray-800 dark:bg-gray-900/60 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
               <h3 className="text-base font-bold text-gray-900 dark:text-white">
@@ -544,10 +544,10 @@ export default function BusinessAnalysisPage() {
         </div>
       </div>
 
-      {/* Row 3: Industry Sectors & Revenue Contribution Bar Breakdown */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Sector Distribution (7 cols) */}
-        <div className="lg:col-span-7 rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 shadow-theme-xs dark:border-gray-800 dark:bg-gray-900/60">
+      {/* Row 3: Industry Sectors & Revenue Contribution Bar Breakdown (50% / 50% Half Grid) */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Sector Distribution (50% on Desktop) */}
+        <div className="w-full rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 shadow-theme-xs dark:border-gray-800 dark:bg-gray-900/60">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
             <div>
               <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">
@@ -612,8 +612,8 @@ export default function BusinessAnalysisPage() {
           </div>
         </div>
 
-        {/* Workforce & Field Engineering Efficiency (5 cols) */}
-        <div className="lg:col-span-5 rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 shadow-theme-xs dark:border-gray-800 dark:bg-gray-900/60 flex flex-col justify-between">
+        {/* Workforce & Field Engineering Efficiency (50% on Desktop) */}
+        <div className="w-full rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 shadow-theme-xs dark:border-gray-800 dark:bg-gray-900/60 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between">
               <h3 className="text-base font-bold text-gray-900 dark:text-white">

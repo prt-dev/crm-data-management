@@ -7,183 +7,11 @@ import {
   LeadStatus,
 } from "@/types/lead";
 
-const STORAGE_KEY = "nleta_crm_leads_v1";
+const STORAGE_KEY = "nleta_crm_leads_v2";
 const LEADS_CHANGE_EVENT = "nleta_leads_updated";
 
-export const initialMockLeads: LeadItem[] = [
-  {
-    id: "LD-501",
-    facilityName: "Grand Venice Mall",
-    facilityType: "Commercial Complex",
-    contactPerson: "Vikram Malhotra",
-    contactEmail: "v.malhotra@grandvenice.in",
-    contactPhone: "+91 98112 45890",
-    equipmentType: "Heavy Duty Escalators & Passenger Lifts",
-    unitsCount: 14,
-    auditType: "Annual Safety Audit",
-    estimatedValue: "₹4,20,000",
-    numericValue: 420000,
-    source: "Annual Renewal",
-    status: "Audit Scheduled",
-    priority: "High",
-    assignedBdeId: "BDE-201",
-    assignedBdeName: "Vikram Malhotra",
-    location: "Greater Noida, Uttar Pradesh",
-    createdDate: "2026-09-18",
-    scheduledDate: "2026-09-28",
-    notes: "Mandatory annual inspection for 10 escalators and 4 high-speed glass observation elevators.",
-  },
-  {
-    id: "LD-502",
-    facilityName: "Apollo MedCity Tower A & B",
-    facilityType: "Hospital",
-    contactPerson: "Dr. Sunita Kulkarni",
-    contactEmail: "s.kulkarni@apollomed.org",
-    contactPhone: "+91 98230 77123",
-    equipmentType: "High-Speed Bed/Stretcher & Emergency Lifts",
-    unitsCount: 8,
-    auditType: "Emergency Inspection",
-    estimatedValue: "₹2,80,000",
-    numericValue: 280000,
-    source: "Inbound Call",
-    status: "Under Review",
-    priority: "High",
-    assignedBdeId: "BDE-202",
-    assignedBdeName: "Pooja Singhania",
-    location: "New Delhi, NCR",
-    createdDate: "2026-09-20",
-    scheduledDate: "2026-09-26",
-    notes: "Critical emergency inspection requested following seismic sensor recalibration.",
-  },
-  {
-    id: "LD-503",
-    facilityName: "Lucknow Metro Central Station",
-    facilityType: "Transit Hub",
-    contactPerson: "S. K. Srivastava",
-    contactEmail: "sk.srivastava@upmetrorail.gov.in",
-    contactPhone: "+91 94150 11984",
-    equipmentType: "Heavy Transit Public Escalators & Moving Walkways",
-    unitsCount: 22,
-    auditType: "New Commissioning",
-    estimatedValue: "₹8,90,000",
-    numericValue: 890000,
-    source: "Government Portal",
-    status: "Quotation Sent",
-    priority: "High",
-    assignedBdeId: "BDE-201",
-    assignedBdeName: "Vikram Malhotra",
-    location: "Lucknow, Uttar Pradesh",
-    createdDate: "2026-09-12",
-    scheduledDate: "2026-10-02",
-    notes: "Full safety commissioning clearance before official opening of Terminal 2 subway interconnect.",
-  },
-  {
-    id: "LD-504",
-    facilityName: "Apex Heights Highrise Towers",
-    facilityType: "Residential Tower",
-    contactPerson: "Rohan Singhania",
-    contactEmail: "rohan@apexheights-rwa.com",
-    contactPhone: "+91 97188 33451",
-    equipmentType: "Traction Passenger Lifts (G+32)",
-    unitsCount: 10,
-    auditType: "Modernization Testing",
-    estimatedValue: "₹3,50,000",
-    numericValue: 350000,
-    source: "Direct Referral",
-    status: "New Inquiry",
-    priority: "Medium",
-    assignedBdeId: "BDE-203",
-    assignedBdeName: "Karthik Subramanian",
-    location: "Gurugram, Haryana",
-    createdDate: "2026-09-22",
-    scheduledDate: "2026-10-05",
-    notes: "Client replacing legacy drive controls with regenerative VFD drives; requires BIS code verification.",
-  },
-  {
-    id: "LD-505",
-    facilityName: "CyberCity IT Park Block 4",
-    facilityType: "Tech Park",
-    contactPerson: "Priya Nair",
-    contactEmail: "priya.nair@cybercity-tech.com",
-    contactPhone: "+91 99401 22899",
-    equipmentType: "Smart Destination Control Lifts",
-    unitsCount: 16,
-    auditType: "Annual Safety Audit",
-    estimatedValue: "₹5,40,000",
-    numericValue: 540000,
-    source: "Annual Renewal",
-    status: "Approved & Certified",
-    priority: "Medium",
-    assignedBdeId: "BDE-201",
-    assignedBdeName: "Vikram Malhotra",
-    location: "Bengaluru, Karnataka",
-    createdDate: "2026-09-10",
-    scheduledDate: "2026-09-16",
-    notes: "Full clearance certificate issued valid until September 2027.",
-  },
-  {
-    id: "LD-506",
-    facilityName: "Radisson Blu Convention Center",
-    facilityType: "Commercial Complex",
-    contactPerson: "Manish Chawla",
-    contactEmail: "m.chawla@radissonblu-events.in",
-    contactPhone: "+91 98104 67012",
-    equipmentType: "Panoramic Glass Lifts & Service Elevators",
-    unitsCount: 6,
-    auditType: "Annual Safety Audit",
-    estimatedValue: "₹1,95,000",
-    numericValue: 195000,
-    source: "Inbound Call",
-    status: "Audit Scheduled",
-    priority: "Low",
-    assignedBdeId: "BDE-202",
-    assignedBdeName: "Pooja Singhania",
-    location: "Jaipur, Rajasthan",
-    createdDate: "2026-09-21",
-    scheduledDate: "2026-09-30",
-    notes: "Annual certification required ahead of International Trade Summit.",
-  },
-  {
-    id: "LD-507",
-    facilityName: "Max Super Specialty Hospital",
-    facilityType: "Hospital",
-    contactPerson: "Col. Sanjeev Roy (Retd.)",
-    contactEmail: "ops@maxhealthcare-west.org",
-    contactPhone: "+91 98119 55432",
-    equipmentType: "Hydraulic Cleanroom Lifts",
-    unitsCount: 5,
-    auditType: "Emergency Inspection",
-    estimatedValue: "₹1,80,000",
-    numericValue: 180000,
-    source: "Government Portal",
-    status: "Approved & Certified",
-    priority: "High",
-    location: "Saket, New Delhi",
-    createdDate: "2026-09-08",
-    scheduledDate: "2026-09-14",
-    notes: "Urgent pressure valve testing completed. Clean safety report issued.",
-  },
-  {
-    id: "LD-508",
-    facilityName: "Vajra Industrial Logistics Hub",
-    facilityType: "Tech Park",
-    contactPerson: "Gurpreet Singh",
-    contactEmail: "gurpreet@vajralogistics.com",
-    contactPhone: "+91 98722 43210",
-    equipmentType: "Heavy Freight Elevators (5 Ton Capacity)",
-    unitsCount: 4,
-    auditType: "New Commissioning",
-    estimatedValue: "₹3,10,000",
-    numericValue: 310000,
-    source: "Direct Referral",
-    status: "Quotation Sent",
-    priority: "Medium",
-    location: "Faridabad, Haryana",
-    createdDate: "2026-09-19",
-    scheduledDate: "2026-10-08",
-    notes: "Quotation for dynamic brake drop test and static overload certification submitted.",
-  },
-];
+import { initialMockLeads } from "@/data/leadsData";
+export { initialMockLeads };
 
 // INR Currency Formatter Helper
 export function formatINR(value: number): string {
@@ -416,30 +244,19 @@ export const leadService = {
       0
     );
 
-    const scheduledAudits = leads.filter(
-      (l) => l.status === "Audit Scheduled" || l.status === "Under Review"
-    ).length;
-
-    const approvedCertified = leads.filter(
-      (l) => l.status === "Approved & Certified"
-    ).length;
-
-    const newInquiries = leads.filter(
-      (l) => l.status === "New Inquiry"
-    ).length;
+    const wonCount = leads.filter((l) => l.status === "Won").length;
+    const underDiscussionCount = leads.filter((l) => l.status === "Under Discussion").length;
+    const lostCount = leads.filter((l) => l.status === "Lost").length;
 
     const conversionRate =
       totalLeads > 0
-        ? `${Math.round((approvedCertified / totalLeads) * 100 * 10) / 10}%`
+        ? `${Math.round((wonCount / totalLeads) * 100 * 10) / 10}%`
         : "0%";
 
     const statusBreakdown: Record<LeadStatus, number> = {
-      "New Inquiry": 0,
-      "Audit Scheduled": 0,
-      "Under Review": 0,
-      "Quotation Sent": 0,
-      "Approved & Certified": 0,
-      "Rejected / Inactive": 0,
+      Won: 0,
+      "Under Discussion": 0,
+      Lost: 0,
     };
 
     leads.forEach((l) => {
@@ -452,10 +269,10 @@ export const leadService = {
       totalLeads,
       activePipelineValue,
       formattedPipelineValue: formatINR(activePipelineValue),
-      scheduledAudits,
-      approvedCertified,
+      wonCount,
+      underDiscussionCount,
+      lostCount,
       conversionRate,
-      newInquiries,
       statusBreakdown,
     };
   },

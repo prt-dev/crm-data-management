@@ -78,48 +78,34 @@ export default function LeadsViewPage() {
   // Status badge styling helper
   const getStatusBadge = (status: LeadStatus) => {
     switch (status) {
-      case "Approved & Certified":
+      case "Won":
         return {
           bg: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/40",
           dot: "bg-emerald-500",
         };
-      case "Audit Scheduled":
+      case "Under Discussion":
         return {
           bg: "bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-400 border-blue-200 dark:border-blue-800/40",
           dot: "bg-blue-500",
         };
-      case "Under Review":
+      case "Lost":
         return {
-          bg: "bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400 border-amber-200 dark:border-amber-800/40",
-          dot: "bg-amber-500",
+          bg: "bg-rose-50 text-rose-700 dark:bg-rose-500/15 dark:text-rose-400 border-rose-200 dark:border-rose-800/40",
+          dot: "bg-rose-500",
         };
-      case "Quotation Sent":
-        return {
-          bg: "bg-purple-50 text-purple-700 dark:bg-purple-500/15 dark:text-purple-400 border-purple-200 dark:border-purple-800/40",
-          dot: "bg-purple-500",
-        };
-      case "Rejected / Inactive":
+      default:
         return {
           bg: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400 border-gray-200 dark:border-gray-700",
           dot: "bg-gray-400",
-        };
-      case "New Inquiry":
-      default:
-        return {
-          bg: "bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-400 border-brand-200 dark:border-brand-800/40",
-          dot: "bg-brand-500",
         };
     }
   };
 
   // Filter options for DynamicTable dropdown
   const filterOptions = [
-    { label: "New Inquiry", value: "New Inquiry", field: "status" as keyof LeadItem },
-    { label: "Audit Scheduled", value: "Audit Scheduled", field: "status" as keyof LeadItem },
-    { label: "Under Review", value: "Under Review", field: "status" as keyof LeadItem },
-    { label: "Quotation Sent", value: "Quotation Sent", field: "status" as keyof LeadItem },
-    { label: "Approved & Certified", value: "Approved & Certified", field: "status" as keyof LeadItem },
-    { label: "Rejected / Inactive", value: "Rejected / Inactive", field: "status" as keyof LeadItem },
+    { label: "Won", value: "Won", field: "status" as keyof LeadItem },
+    { label: "Under Discussion", value: "Under Discussion", field: "status" as keyof LeadItem },
+    { label: "Lost", value: "Lost", field: "status" as keyof LeadItem },
   ];
 
   // Secondary Fast-filtered data (if quick status pills clicked)
@@ -376,29 +362,29 @@ export default function LeadsViewPage() {
             }
           />
 
-          {/* Card 3: Scheduled Safety Audits */}
+          {/* Card 3: Under Discussion */}
           <MetricCard
-            title="Safety Audits Scheduled"
-            value={stats ? stats.scheduledAudits : 0}
+            title="Under Discussion"
+            value={stats ? stats.underDiscussionCount : 0}
             change="+8.4%"
             changeType="increase"
-            period="on-site inspections"
+            period="active negotiations"
             icon={
               <svg className="w-6 h-6 fill-current text-blue-600 dark:text-blue-400" viewBox="0 0 24 24">
-                <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z" />
+                <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z" />
               </svg>
             }
           />
 
-          {/* Card 4: Approved & Certified Rate */}
+          {/* Card 4: Won Deals Rate */}
           <MetricCard
-            title="Approved & Certified"
-            value={stats ? stats.approvedCertified : 0}
+            title="Won Deals"
+            value={stats ? stats.wonCount : 0}
             change={stats?.conversionRate ? `${stats.conversionRate} win rate` : "+3.8%"}
             changeType="increase"
-            period="safety certifications"
+            period="closed & certified contracts"
             icon={
-              <svg className="w-6 h-6 fill-current text-purple-600 dark:text-purple-400" viewBox="0 0 24 24">
+              <svg className="w-6 h-6 fill-current text-emerald-600 dark:text-emerald-400" viewBox="0 0 24 24">
                 <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />
               </svg>
             }
@@ -412,31 +398,24 @@ export default function LeadsViewPage() {
           Quick Filters:
         </span>
         {[
-          { label: "All Leads", value: "ALL", count: leads.length },
+          { label: "All Leads", value: "ALL", count: leads.length, color: "gray" },
           {
-            label: "New Inquiry",
-            value: "New Inquiry",
-            count: stats?.statusBreakdown["New Inquiry"] || 0,
+            label: "Won (Green)",
+            value: "Won",
+            count: stats?.statusBreakdown["Won"] || 0,
+            color: "emerald",
           },
           {
-            label: "Audit Scheduled",
-            value: "Audit Scheduled",
-            count: stats?.statusBreakdown["Audit Scheduled"] || 0,
+            label: "Under Discussion (Blue)",
+            value: "Under Discussion",
+            count: stats?.statusBreakdown["Under Discussion"] || 0,
+            color: "blue",
           },
           {
-            label: "Under Review",
-            value: "Under Review",
-            count: stats?.statusBreakdown["Under Review"] || 0,
-          },
-          {
-            label: "Quotation Sent",
-            value: "Quotation Sent",
-            count: stats?.statusBreakdown["Quotation Sent"] || 0,
-          },
-          {
-            label: "Approved & Certified",
-            value: "Approved & Certified",
-            count: stats?.statusBreakdown["Approved & Certified"] || 0,
+            label: "Lost (Red)",
+            value: "Lost",
+            count: stats?.statusBreakdown["Lost"] || 0,
+            color: "rose",
           },
         ].map((pill) => {
           const isActive = quickStatusFilter === pill.value;
@@ -445,17 +424,19 @@ export default function LeadsViewPage() {
               key={pill.value}
               type="button"
               onClick={() => setQuickStatusFilter(pill.value)}
-              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition ${isActive
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition ${
+                isActive
                   ? "bg-brand-500 text-white shadow-theme-xs font-semibold"
                   : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50 dark:bg-gray-900 dark:border-gray-800 dark:text-gray-300 dark:hover:bg-gray-800"
-                }`}
+              }`}
             >
               <span>{pill.label}</span>
               <span
-                className={`rounded-full px-1.5 py-0.2 text-[10px] ${isActive
+                className={`rounded-full px-1.5 py-0.2 text-[10px] ${
+                  isActive
                     ? "bg-white/20 text-white"
                     : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"
-                  }`}
+                }`}
               >
                 {pill.count}
               </span>
@@ -638,35 +619,41 @@ export default function LeadsViewPage() {
                   Update Lifecycle Status:
                 </span>
                 <div className="flex flex-wrap gap-2">
-                  {(
-                    [
-                      "New Inquiry",
-                      "Audit Scheduled",
-                      "Under Review",
-                      "Quotation Sent",
-                      "Approved & Certified",
-                    ] as LeadStatus[]
-                  ).map((st) => (
-                    <button
-                      key={st}
-                      type="button"
-                      disabled={selectedLead.status === st}
-                      onClick={async () => {
-                        const updated = await leadService.updateLead(selectedLead.id, {
-                          status: st,
-                        });
-                        setSelectedLead(updated);
-                        showToast(`Status updated to "${st}"`);
-                        refreshData();
-                      }}
-                      className={`rounded-lg px-2.5 py-1 text-xs font-medium transition ${selectedLead.status === st
-                          ? "bg-brand-500 text-white font-bold cursor-default"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                  {(["Won", "Under Discussion", "Lost"] as LeadStatus[]).map((st) => {
+                    const isSelected = selectedLead.status === st;
+                    const getActiveStyle = (status: LeadStatus) => {
+                      switch (status) {
+                        case "Won":
+                          return "bg-emerald-600 text-white font-bold shadow-theme-xs";
+                        case "Under Discussion":
+                          return "bg-blue-600 text-white font-bold shadow-theme-xs";
+                        case "Lost":
+                          return "bg-rose-600 text-white font-bold shadow-theme-xs";
+                      }
+                    };
+                    return (
+                      <button
+                        key={st}
+                        type="button"
+                        disabled={isSelected}
+                        onClick={async () => {
+                          const updated = await leadService.updateLead(selectedLead.id, {
+                            status: st,
+                          });
+                          setSelectedLead(updated);
+                          showToast(`Status updated to "${st}"`);
+                          refreshData();
+                        }}
+                        className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${
+                          isSelected
+                            ? `${getActiveStyle(st)} cursor-default`
+                            : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
                         }`}
-                    >
-                      {st}
-                    </button>
-                  ))}
+                      >
+                        {st}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             </div>

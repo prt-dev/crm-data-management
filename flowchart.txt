@@ -1,0 +1,439 @@
+================================================================================
+   NATIONAL LIFT ESCALATOR TESTING AGENCY (NLETA) - CRM & SAFETY PLATFORM
+             COMPREHENSIVE PROJECT FLOWCHART & USER JOURNEYS
+================================================================================
+
+TABLE OF CONTENTS:
+1. Multi-Role Ecosystem & Architecture Diagram (ASCII & Mermaid)
+2. Perspective 1: Sales Representative / BDE Flowchart
+3. Perspective 2: Inspection Inspector / Field Engineer Flowchart
+4. Perspective 3: System Administrator & Executive Leadership Flowchart
+5. Perspective 4: Employee & HR Operations Flowchart
+6. Perspective 5: Client & Facility Manager Flowchart
+7. Master End-to-End Operational Lifecycle & State Machine
+
+================================================================================
+1. MULTI-ROLE ECOSYSTEM & ARCHITECTURE DIAGRAM
+================================================================================
+
+ASCII Diagram:
+-------------
+                     +----------------------------------+
+                     |    NLETA AUTHENTICATION PORTAL   |
+                     |         (/signin, /signup)       |
+                     +-----------------+----------------+
+                                       |
+        +------------------------------+------------------------------+
+        |                              |                              |
+        v                              v                              v
++------------------+         +--------------------+         +-------------------+
+|  SALES REP (BDE) |         | INSPECTION INSP.   |         | HR / OPERATIONS   |
+|  - Leads Intake  |         | - Field Dispatch   |         | - Staff Roster    |
+|  - Quota Tracker |         | - Site Testing     |         | - Safety Licenses |
+|  - Pipeline Deals|         | - BIS Certificate  |         | - Dept Allocation |
++--------+---------+         +---------+----------+         +---------+---------+
+         |                             |                              |
+         +-----------------------------+------------------------------+
+                                       |
+                                       v
+                     +----------------------------------+
+                     |   GLOBAL ADMIN DASHBOARD (/dash) |
+                     |   - Live Reactive Metrics        |
+                     |   - Role Dashboards Switcher     |
+                     |   - Business Analytics & BI      |
+                     +-----------------+----------------+
+                                       |
+                     +-----------------+----------------+
+                     |    DATA SERVICES & STORAGE       |
+                     |    (lead, client, asset, bde,    |
+                     |     technician, employee svcs)   |
+                     +----------------------------------+
+
+Mermaid Diagram:
+----------------
+```mermaid
+flowchart TB
+    subgraph Users ["👥 User Perspectives & Personas"]
+        Admin["👑 System Admin & Executive"]
+        BDE["💼 Sales Rep / BDE"]
+        Inspector["🛡️ Inspection Inspector"]
+        HR["👥 HR & Operations Staff"]
+        Client["🏢 Client & Facility Manager"]
+    end
+
+    subgraph CorePlatform ["⚙️ NLETA Core CRM & Safety Platform"]
+        Auth["🔐 Auth & Role Routing (/signin, /signup)"]
+        
+        subgraph Modules ["Business & Operations Modules"]
+            AdminDash["📊 Main Agency Dashboard (/dashboard)"]
+            SalesMod["💼 Sales & Pipeline (/bde/dashboard, /leads)"]
+            InspectMod["🛡️ Field Inspection Engine (/technicians/dashboard, /client-assets)"]
+            StaffMod["👥 Workforce & HR (/employees/dashboard)"]
+            ClientMod["🏢 Accounts & Contracts (/clients)"]
+            BIMod["📈 BI & Analytics (/analytics)"]
+        end
+        
+        subgraph DataLayer ["Live Reactive State & Local Storage"]
+            DB[("Data Services & Observer Events")]
+        end
+    end
+
+    Admin --> Auth --> AdminDash & BIMod
+    BDE --> Auth --> SalesMod
+    Inspector --> Auth --> InspectMod
+    HR --> Auth --> StaffMod
+    Client -.-> ClientMod & InspectMod
+
+    SalesMod <--> DB
+    InspectMod <--> DB
+    StaffMod <--> DB
+    ClientMod <--> DB
+    AdminDash <--> DB
+```
+
+================================================================================
+2. PERSPECTIVE 1: SALES REPRESENTATIVE / BDE FLOWCHART
+================================================================================
+
+ASCII Diagram:
+-------------
+[ Sales Rep Logs In ]
+         |
+         v
++-------------------------------------------------------+
+| Sales Rep Dashboard (/bde/dashboard)                  |
+| - View Q3 Quota Progress (% Target Attainment)        |
+| - Review Closed Revenue vs Target                     |
+| - Check Win Rate % and Active Pipeline Deals          |
++---------------------------+---------------------------+
+                            |
+         +------------------+-------------------+
+         |                                      |
+         v                                      v
++-----------------------------+   +------------------------------------+
+| 1. Register New Inbound Lead|   | 2. Work Active Pipeline Funnel     |
+|    (/leads/create)          |   |    (5 Stages)                      |
+| - Enter Facility Name       |   |                                    |
+| - Select Equipment Type     |   | [Stage 1: New Inquiries]           |
+| - Assign Deal Value (₹)     |   |          |                         |
+| - Set Assigned Sales Rep    |   |          v (Schedule Site Visit)   |
++--------------+--------------+   | [Stage 2: Scheduled Inspection]    |
+               |                  |          |                         |
+               v                  |          v (Technical Review)      |
+[ Saved in CRM Pipeline ] ------->| [Stage 3: Under Review]            |
+                                  |          |                         |
+                                  |          v (Commercial Pricing)    |
+                                  | [Stage 4: Proposal Sent]           |
+                                  |          |                         |
+                                  |          v (Deal Won & Contract)   |
+                                  | [Stage 5: Won Deals (Closed)]      |
+                                  +-----------------+------------------+
+                                                    |
+                                                    v
+                                  +------------------------------------+
+                                  | Client Account Created (/clients)  |
+                                  | Lifts & Escalators Added to System |
+                                  | Closed Revenue Increases! 🎯       |
+                                  +------------------------------------+
+
+Mermaid Diagram:
+----------------
+```mermaid
+flowchart TD
+    Start([Sales Rep Logs In]) --> Dashboard["💼 Sales Rep Dashboard (/bde/dashboard)"]
+    
+    Dashboard --> ActionBranch{"Select Action"}
+    
+    ActionBranch -->|"1. Track Performance"| CheckTarget["Check Quota Attainment & Win Rate<br/>(Target vs Closed Revenue)"]
+    CheckTarget --> ViewLeaderboard["Review Sales Rep Leaderboard"]
+
+    ActionBranch -->|"2. Prospect & Intake"| RegLead["Register New Inbound Lead (/leads/create)"]
+    RegLead --> SetDetails["Enter Facility, Units Count, Audit Type & Estimated Value"]
+    SetDetails --> AssignSelf["Assign to Territory / Sales Rep"]
+    AssignSelf --> SaveLead[("Lead Created in CRM")]
+
+    ActionBranch -->|"3. Work Active Pipeline"| FunnelView["Inspect Pipeline Funnel (5 Stage Progression)"]
+    FunnelView --> Stage1["1. New Inquiry"]
+    Stage1 -->|"Schedule Site Visit"| Stage2["2. Scheduled Meeting / Inspection"]
+    Stage2 -->|"Technical Assessment"| Stage3["3. Under Review"]
+    Stage3 -->|"Send Commercial Quote"| Stage4["4. Proposal Sent"]
+    Stage4 -->|"Client Approves & Pays"| Stage5["5. Won Deals (Closed & Invoiced)"]
+    
+    Stage5 --> ConvertClient["Convert to Active Client Account & Onboard Assets (/clients)"]
+    ConvertClient --> QuotaIncrement["Closed Revenue & Quota Increases! 🎯"]
+```
+
+================================================================================
+3. PERSPECTIVE 2: INSPECTION INSPECTOR / FIELD ENGINEER FLOWCHART
+================================================================================
+
+ASCII Diagram:
+-------------
+[ Inspection Inspector Logs In ]
+         |
+         v
++-------------------------------------------------------+
+| Inspection Inspector Dashboard (/technicians/dashboard)|
+| - Certified Status & Dispatch Readiness               |
+| - Review Assigned Field Zone (e.g. North Zone)        |
+| - Check Active Site Testing Queue                     |
++---------------------------+---------------------------+
+                            |
+                            v
++-------------------------------------------------------+
+| 1. Field Dispatch & Status Update                     |
+|    Available on Field ➔ In Transit ➔ On-Site Testing  |
++---------------------------+---------------------------+
+                            |
+                            v
++-------------------------------------------------------+
+| 2. Perform On-Site Physical Safety Audit              |
+|    (/client-assets)                                   |
+|    - Traction Ropes & Hydraulic Valves Testing        |
+|    - Speed Governors, Brake Systems & Buffers         |
+|    - Door Interlocks, Light Curtains & Sensors        |
++---------------------------+---------------------------+
+                            |
+                    [ Safety Verdict ]
+                            |
+            +---------------+---------------+
+            |                               |
+    (Defects Detected)              (100% Standards Met)
+            |                               |
+            v                               v
++---------------------------+   +------------------------------------+
+| Flag Deficiencies & Issue |   | Award Quality Score (e.g. 4.9/5.0★)|
+| Rectification Notice      |   | Issue BIS / ISO Safety Certificate |
++-------------+-------------+   +-----------------+------------------+
+              |                                   |
+              v                                   v
++---------------------------+   +------------------------------------+
+| Client Rectifies & Re-test|   | Asset Marked "Certified & Safe"    |
++---------------------------+   | Completed Audits Count Increments  |
+                                +------------------------------------+
+
+Mermaid Diagram:
+----------------
+```mermaid
+flowchart TD
+    Start([Inspection Inspector Logs In]) --> InspDash["🛡️ Inspection Inspector Dashboard (/technicians/dashboard)"]
+
+    InspDash --> ViewQueue{"Inspector Action"}
+
+    ViewQueue -->|"1. Operational Readiness"| CheckZone["Review Assigned Zone & Schedule (North/West/South/Central)"]
+    CheckZone --> SetStatus["Update Field Status (Available ➔ In Transit ➔ On-Site)"]
+
+    ViewQueue -->|"2. Execute Safety Audit"| LoadAsset["Inspect Client Lift / Escalator (/client-assets)"]
+    LoadAsset --> InspectChecklist["Conduct Physical & Mechanical Tests:<br/>• Speed Governors & Emergency Brakes<br/>• Traction Ropes & Hydraulic Valves<br/>• Door Interlocks & Sensor Safeties"]
+    
+    InspectChecklist --> EvalResult{"Safety Criteria Met?"}
+    
+    EvalResult -->|"No (Defects Found)"| FlagDefect["Log Safety Deficiencies & Violations"]
+    FlagDefect --> IssueRectification["Issue Defect Rectification Notice to Client"]
+    IssueRectification --> ReAudit["Schedule Re-Inspection"]
+
+    EvalResult -->|"Yes (100% Compliant)"| SafetyRating["Award Safety Score (e.g. 98.8% / 5.0★)"]
+    SafetyRating --> CertifyAsset["Issue Official BIS / ISO Safety Compliance Certificate"]
+    CertifyAsset --> UpdateRecords["Increment Completed Audits Count (/technicians/[id])"]
+```
+
+================================================================================
+4. PERSPECTIVE 3: SYSTEM ADMINISTRATOR & EXECUTIVE LEADERSHIP FLOWCHART
+================================================================================
+
+ASCII Diagram:
+-------------
+[ Admin / Executive Logs In ]
+         |
+         v
++-------------------------------------------------------+
+| Main Agency Dashboard (/dashboard)                   |
+| - Agency Performance Metrics (Leads, Assets, Revenue) |
+| - Role Dashboards Quick Launch Strip                  |
+| - Equipment Monthly Audits Graph (50% Desktop Split)  |
++---------------------------+---------------------------+
+                            |
+         +------------------+-------------------+
+         |                                      |
+         v                                      v
++-----------------------------+   +------------------------------------+
+| Business Analysis & BI      |   | Agency Governance & Operations     |
+| (/analytics)                |   |                                    |
+| - Revenue Growth Forecast   |   | - Reallocate Sales Territories     |
+| - Audit Volumes by Category |   | - Assign Inspectors to Clients     |
+| - Geographic Zone Analytics |   | - Monitor HR Compliance & Licenses |
++-----------------------------+   +------------------------------------+
+
+Mermaid Diagram:
+----------------
+```mermaid
+flowchart TD
+    Start([Admin / Executive Logs In]) --> MasterDash["📊 Main Agency Dashboard (/dashboard)"]
+
+    MasterDash --> NavStrip{"Navigate Management Modules"}
+
+    NavStrip -->|"Role Switcher"| QuickLaunch["Direct Role Dashboard Switcher:<br/>• Sales Rep Dashboard<br/>• Employee Dashboard<br/>• Inspector Dashboard"]
+
+    NavStrip -->|"Analytics & BI"| BI["📈 Business Analysis (/analytics)<br/>• Quarterly Revenue Charts<br/>• Audit Volume Projections<br/>• Territory Performance"]
+
+    NavStrip -->|"Workforce & Sales"| Governance["Staff & Rep Allocations:<br/>• Reallocate Sales Territories (/bde)<br/>• Assign Inspectors to Client Accounts (/clients)<br/>• Monitor HR Compliance & Payroll (/employees)"]
+
+    NavStrip -->|"CRM Master Records"| GlobalSearch["Inspect Dynamic Tables:<br/>• All Leads & Pipeline (/leads)<br/>• All Client Portfolios (/clients)<br/>• All Lift / Escalator Assets (/client-assets)"]
+```
+
+================================================================================
+5. PERSPECTIVE 4: EMPLOYEE & HR OPERATIONS FLOWCHART
+================================================================================
+
+ASCII Diagram:
+-------------
+[ HR / Operations Manager Logs In ]
+         |
+         v
++-------------------------------------------------------+
+| Employee & Workforce Dashboard (/employees/dashboard) |
+| - Total Workforce Headcount & Active On Duty Staff    |
+| - Headcount by Department Bar Chart                   |
+| - Safety Certifications & License Expiry Watch        |
++---------------------------+---------------------------+
+                            |
+         +------------------+-------------------+
+         |                                      |
+         v                                      v
++-----------------------------+   +------------------------------------+
+| 1. Employee Onboarding      |   | 2. Compliance & License Tracking   |
+|    (/employees/create)      |   | - BIS Elevator Inspector Licenses  |
+| - Allocate Department       |   | - Field Safety & PPE Inductions    |
+| - Set Station / Hub Location|   | - Trigger Renewals Before Expiry   |
+| - Assign Grade & Band       |   +------------------------------------+
++-----------------------------+
+
+Mermaid Diagram:
+----------------
+```mermaid
+flowchart TD
+    Start([HR / Operations Manager Logs In]) --> EmpDash["👥 Employee Dashboard (/employees/dashboard)"]
+
+    EmpDash --> HRAction{"HR Operations Flow"}
+
+    HRAction -->|"1. New Hire Onboarding"| NewEmp["Register Employee (/employees/create)"]
+    NewEmp --> AssignDept["Select Department:<br/>• Safety & Compliance<br/>• Field Engineering<br/>• Business Development<br/>• Quality Assurance<br/>• Operations & Logistics"]
+    AssignDept --> SetWorkLocation["Assign Station / Hub Location & Salary Band"]
+    SetWorkLocation --> SaveEmp[("Employee Profile Active in CRM")]
+
+    HRAction -->|"2. Safety & License Tracking"| LicenseTracker["Review Safety Milestones:<br/>• Elevator Safety Inspector Licenses (BIS)<br/>• Field Safety Induction & PPE Training<br/>• Hazard Insurance Coverage"]
+    LicenseTracker --> CheckExpiry{"License Expiring Soon?"}
+    CheckExpiry -->|"Yes"| TriggerRenewal["Schedule Refresher & Certification Renewal"]
+    CheckExpiry -->|"No"| MarkCompliant["Mark 100% Compliant"]
+
+    HRAction -->|"3. Staff Directory"| FilterRoster["Filter & Search Roster by Department & Status (/employees/[id])"]
+```
+
+================================================================================
+6. PERSPECTIVE 5: CLIENT & FACILITY MANAGER FLOWCHART
+================================================================================
+
+ASCII Diagram:
+-------------
+[ Facility Manager with Elevators/Escalators ]
+         |
+         v
++-------------------------------------------------------+
+| Submit Audit Inquiry to NLETA                         |
++---------------------------+---------------------------+
+                            |
+                            v
++-------------------------------------------------------+
+| Sales Rep Reviews Technical Scope & Sends Proposal    |
++---------------------------+---------------------------+
+                            |
+                            v
++-------------------------------------------------------+
+| Agreement Signed ➔ Client Portfolio Created (/clients)|
+| Register Lifts & Escalators (/client-assets)          |
++---------------------------+---------------------------+
+                            |
+                            v
++-------------------------------------------------------+
+| Certified Inspection Inspector Conducts On-Site Audit |
++---------------------------+---------------------------+
+                            |
+                    [ Safety Verdict ]
+                            |
+            +---------------+---------------+
+            |                               |
+        (Pass)                           (Fail)
+            |                               |
+            v                               v
++---------------------------+   +------------------------------------+
+| Official Safety Compliance|   | Receive Defect Notice              |
+| Certificate Issued ✅     |   | Complete Rectification & Re-audit  |
++-------------+-------------+   +------------------------------------+
+              |
+              v
++---------------------------+
+| Annual Recurring Audit    |
+| Window Scheduled          |
++---------------------------+
+
+Mermaid Diagram:
+----------------
+```mermaid
+flowchart TD
+    Inquiry([Facility Manager Has New Elevators]) --> SubmitInquiry["Submits Audit Inquiry to NLETA"]
+    SubmitInquiry --> BDEContact["BDE Sales Rep Reaches Out & Prepares Proposal"]
+    BDEContact --> SignAgreement["Contract Signed & Account Created (/clients)"]
+    SignAgreement --> RegisterAssets["Register Elevator & Escalator Units<br/>• Traction Passenger Lifts<br/>• Transit Escalators<br/>• Hydraulic Freight Elevators"]
+    RegisterAssets --> InspectorAssigned["Certified Inspection Inspector Assigned"]
+    InspectorAssigned --> FieldTesting["Inspector Conducts On-Site Physical Inspection"]
+    FieldTesting --> InspectionOutcome{"Safety Verdict"}
+    InspectionOutcome -->|"Approved"| ReceiveCert["Receive Official Safety Compliance Certificate"]
+    ReceiveCert --> Operational["Elevators Certified Safe for Public Operation ✅"]
+    Operational --> Recurring["Annual Recurring Audit Scheduled"]
+    InspectionOutcome -->|"Defects Found"| ReceiveNotice["Receive Safety Defect Notice ⚠️"]
+    ReceiveNotice --> Rectify["Fix Mechanical Issues & Request Re-Audit"]
+```
+
+================================================================================
+7. MASTER END-TO-END OPERATIONAL LIFECYCLE & STATE MACHINE
+================================================================================
+
+Mermaid State Diagram:
+----------------------
+```mermaid
+stateDiagram-v2
+    [*] --> NewInquiry: Client Inbound Inquiry Created
+    
+    state "1. Sales & Commercial Phase" as SalesPhase {
+        NewInquiry --> AuditScheduled: BDE Contacts & Schedules Site Inspection
+        AuditScheduled --> UnderReview: Technical Scope Evaluated
+        UnderReview --> QuotationSent: Proposal & Commercial Pricing Sent
+        QuotationSent --> WonDeal: Deal Won & Contract Signed
+    }
+
+    state "2. Client & Asset Onboarding" as OnboardPhase {
+        WonDeal --> ClientCreated: Company Profile Created (/clients)
+        ClientCreated --> AssetsRegistered: Lifts & Escalators Logged (/client-assets)
+        AssetsRegistered --> InspectorAssigned: Safety Inspector Allocated (/technicians)
+    }
+
+    state "3. Field Safety Inspection" as AuditPhase {
+        InspectorAssigned --> InTransit: Inspector Dispatched
+        InTransit --> OnSiteTesting: Shaft, Cab & Motor Testing
+        OnSiteTesting --> DefectFound: Safety Violations Detected
+        DefectFound --> OnSiteTesting: Rectification Complete
+        OnSiteTesting --> Certified: 100% Standards Met
+    }
+
+    state "4. Operational Monitoring" as OpsPhase {
+        Certified --> ActiveOperation: Certificate Issued (BIS/ISO Compliant)
+        ActiveOperation --> DueForAudit: Next Annual Audit Window Approaching
+        DueForAudit --> InTransit: Recurring Audit Dispatched
+    }
+
+    Certified --> [*]
+```
+
+================================================================================
+                        END OF FLOWCHART SPECIFICATION
+================================================================================

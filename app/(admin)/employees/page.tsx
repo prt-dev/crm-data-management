@@ -191,10 +191,9 @@ export default function EmployeesPage() {
       align: "center",
       render: (row) => (
         <div className="flex items-center justify-center gap-2">
-          {/* Quick View Button */}
-          <button
-            type="button"
-            onClick={() => setSelectedEmployee(row)}
+          {/* View Profile Button */}
+          <Link
+            href={`/employees/${row.id}`}
             title="View Employee Profile"
             className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 hover:text-brand-600 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-brand-400 transition-colors"
           >
@@ -206,7 +205,7 @@ export default function EmployeesPage() {
                 clipRule="evenodd"
               />
             </svg>
-          </button>
+          </Link>
 
           {/* Edit Button */}
           <Link

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import Breadcrumb from "@/components/breadcrumb/Breadcrumb";
 import MetricGroup, { MetricGroupItem } from "@/components/metrics/MetricGroup";
 import AreaChart from "@/components/charts/AreaChart";
@@ -69,7 +70,7 @@ export default function AdminDashboardPage() {
       id: "leads",
       title: "Total Inquiries & Leads",
       value: leadStats ? leadStats.totalLeads.toLocaleString() : "...",
-      change: `+${leadStats?.newInquiries || 0} new`,
+      change: `${leadStats?.wonCount || 0} won (${leadStats?.conversionRate || "0%"})`,
       changeType: "increase",
       period: "active pipeline",
       icon: (
@@ -147,7 +148,7 @@ export default function AdminDashboardPage() {
 
       {/* Top Breadcrumb & Quick Action Controls */}
       <Breadcrumb
-        pageTitle="National Lift Escalator Testing Agency Dashboard"
+        pageTitle="NLETA CRM"
         items={[
           { label: "Admin Portal", href: "/dashboard" },
           { label: "Safety CRM Dashboard" },
@@ -173,6 +174,72 @@ export default function AdminDashboardPage() {
           </div>
         }
       />
+
+      {/* Role-Specific Dashboards Quick Access */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <Link
+          href="/bde/dashboard"
+          className="group flex items-center justify-between rounded-2xl border border-gray-200 bg-white p-4 shadow-theme-xs transition-all hover:border-brand-500 hover:shadow-theme-md dark:border-gray-800 dark:bg-gray-900"
+        >
+          <div className="flex items-center gap-3.5">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-400 group-hover:scale-105 transition-transform">
+              <svg className="w-6 h-6 fill-current" viewBox="0 0 20 20">
+                <path d="M10 2a4 4 0 100 8 4 4 0 000-8zM3 16a7 7 0 1114 0H3z" />
+              </svg>
+            </div>
+            <div>
+              <span className="block font-bold text-sm text-gray-900 dark:text-white group-hover:text-brand-600 transition-colors">
+                Sales Rep Dashboard
+              </span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                Pipeline, deals & quota tracker &rarr;
+              </span>
+            </div>
+          </div>
+        </Link>
+
+        <Link
+          href="/employees/dashboard"
+          className="group flex items-center justify-between rounded-2xl border border-gray-200 bg-white p-4 shadow-theme-xs transition-all hover:border-blue-light-500 hover:shadow-theme-md dark:border-gray-800 dark:bg-gray-900"
+        >
+          <div className="flex items-center gap-3.5">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-light-50 text-blue-light-600 dark:bg-blue-light-500/15 dark:text-blue-light-400 group-hover:scale-105 transition-transform">
+              <svg className="w-6 h-6 fill-current" viewBox="0 0 20 20">
+                <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+              </svg>
+            </div>
+            <div>
+              <span className="block font-bold text-sm text-gray-900 dark:text-white group-hover:text-blue-light-600 transition-colors">
+                Employee Dashboard
+              </span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                Headcount, departments & HR &rarr;
+              </span>
+            </div>
+          </div>
+        </Link>
+
+        <Link
+          href="/technicians/dashboard"
+          className="group flex items-center justify-between rounded-2xl border border-gray-200 bg-white p-4 shadow-theme-xs transition-all hover:border-purple-500 hover:shadow-theme-md dark:border-gray-800 dark:bg-gray-900"
+        >
+          <div className="flex items-center gap-3.5">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-500/15 dark:text-purple-400 group-hover:scale-105 transition-transform">
+              <svg className="w-6 h-6 fill-current" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div>
+              <span className="block font-bold text-sm text-gray-900 dark:text-white group-hover:text-purple-600 transition-colors">
+                Inspector Dashboard
+              </span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                Safety audits, field & zones &rarr;
+              </span>
+            </div>
+          </div>
+        </Link>
+      </div>
 
       {/* Section 1: KPI Metric Cards */}
       <section>
@@ -233,16 +300,16 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* Graphs Grid: 2/3 Area Chart + 1/3 Radial Target Progress */}
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          <div className="lg:col-span-2">
+        {/* Graphs Grid: 2 Equal Half Columns on Desktop (50% / 50%) */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="w-full">
             <AreaChart
               title="Inspection Pipeline & Revenue Trend"
               subtitle="Monthly safety audits completed vs certification revenue invoiced"
             />
           </div>
 
-          <div className="lg:col-span-1">
+          <div className="w-full">
             <RadialProgressChart
               title="Quarterly Safety Quota"
               subtitle="Target vs completed inspections (Q3 2026)"
@@ -251,15 +318,21 @@ export default function AdminDashboardPage() {
               currentAmount={`${assetStats?.certifiedOperational || 432} Completed`}
             />
           </div>
-        </div>
 
-        {/* Secondary Graph: Equipment Category Inspection Volume */}
-        <div className="grid grid-cols-1">
-          <BarChart
-            title="Monthly Equipment Audits Overview"
-            subtitle="Volume across Escalators, High-Speed Passenger Lifts, and Hospital Bed Elevators"
-            data={equipmentAuditsData}
-          />
+          <div className="w-full">
+            <BarChart
+              title="Monthly Equipment Audits Overview"
+              subtitle="Volume across Escalators, High-Speed Passenger Lifts, and Hospital Bed Elevators"
+              data={equipmentAuditsData}
+            />
+          </div>
+
+          <div className="w-full">
+            <AreaChart
+              title="Inspection Throughput by Quarter"
+              subtitle="Quarter-on-quarter safety certification throughput volume"
+            />
+          </div>
         </div>
       </section>
 

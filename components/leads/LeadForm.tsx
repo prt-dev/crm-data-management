@@ -50,12 +50,9 @@ const leadSources: LeadSource[] = [
 ];
 
 const leadStatuses: LeadStatus[] = [
-  "New Inquiry",
-  "Audit Scheduled",
-  "Under Review",
-  "Quotation Sent",
-  "Approved & Certified",
-  "Rejected / Inactive",
+  "Won",
+  "Under Discussion",
+  "Lost",
 ];
 
 
@@ -85,7 +82,7 @@ export default function LeadForm({ initialLead, isEdit = false }: LeadFormProps)
     initialLead?.source || "Inbound Call"
   );
   const [status, setStatus] = useState<LeadStatus>(
-    initialLead?.status || "New Inquiry"
+    initialLead?.status || "Under Discussion"
   );
   const [priority, setPriority] = useState<LeadPriority>(
     initialLead?.priority || "Medium"

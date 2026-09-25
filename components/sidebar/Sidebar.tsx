@@ -150,12 +150,14 @@ export default function Sidebar({
           ),
           children: [
             { id: "assets-view", label: "View All Assets", href: "/client-assets" },
+            // { id: "assets-create", label: "Register New Asset", href: "/client-assets/create" },
           ],
         },
         {
           id: "bde",
-          label: "BDE Sales Team",
+          label: "Sales Team",
           href: "/bde",
+          badge: { text: "Sales", variant: "pro" },
           icon: (
             <svg className="w-5 h-5 fill-current" viewBox="0 0 20 20" fill="none">
               <path fillRule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clipRule="evenodd" />
@@ -163,13 +165,14 @@ export default function Sidebar({
             </svg>
           ),
           children: [
-            { id: "bde-view", label: "Executive Directory", href: "/bde" },
-            { id: "bde-create", label: "Register Executive", href: "/bde/create" },
+            { id: "bde-dashboard", label: "Sales Dashboard", href: "/bde/dashboard" },
+            { id: "bde-view", label: "Sales Reps Directory", href: "/bde" },
+            { id: "bde-create", label: "Add Sales Rep", href: "/bde/create" },
           ],
         },
         {
           id: "technicians",
-          label: "Technicians",
+          label: "Inspection Inspectors",
           href: "/technicians",
           badge: { text: "Field", variant: "new" },
           icon: (
@@ -178,8 +181,9 @@ export default function Sidebar({
             </svg>
           ),
           children: [
+            { id: "technicians-dashboard", label: "Inspector Dashboard", href: "/technicians/dashboard" },
             { id: "technicians-view", label: "Inspectors Roster", href: "/technicians" },
-            { id: "technicians-create", label: "Register Inspector", href: "/technicians/create" },
+            { id: "technicians-create", label: "Add Inspector", href: "/technicians/create" },
           ],
         },
         {
@@ -193,6 +197,7 @@ export default function Sidebar({
             </svg>
           ),
           children: [
+            { id: "employees-dashboard", label: "Employee Dashboard", href: "/employees/dashboard" },
             { id: "employees-view", label: "Staff Directory", href: "/employees" },
             { id: "employees-create", label: "Register Employee", href: "/employees/create" },
           ],

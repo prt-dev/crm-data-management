@@ -115,7 +115,7 @@ class BdeLeadService {
 
       const leads = await this.getLeadsForBde(bdeId);
       const activeCount = leads.filter(
-        (l) => l.status !== "Approved & Certified" && l.status !== "Rejected / Inactive"
+        (l) => l.status === "Under Discussion"
       ).length;
 
       await bdeService.updateBde(bdeId, {
