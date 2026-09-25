@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Breadcrumb from "@/components/breadcrumb/Breadcrumb";
 import MetricGroup, { MetricGroupItem } from "@/components/metrics/MetricGroup";
 import AreaChart from "@/components/charts/AreaChart";
@@ -8,25 +8,70 @@ import RadialProgressChart from "@/components/charts/RadialProgressChart";
 import BarChart from "@/components/charts/BarChart";
 import LeadsTable from "@/components/tables/LeadsTable";
 import Button from "@/components/ui/Button";
+import { leadService } from "@/services/leadService";
+import { assetService } from "@/services/assetService";
+import { bdeService } from "@/services/bdeService";
+import { technicianService } from "@/services/technicianService";
+import { LeadStats } from "@/types/lead";
+import { AssetStats } from "@/types/asset";
+import { BdeStats } from "@/types/bde";
+import { TechnicianStats } from "@/types/technician";
 
 export default function AdminDashboardPage() {
   const [selectedTimeframe, setSelectedTimeframe] = useState<"monthly" | "quarterly" | "yearly">("monthly");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const [leadStats, setLeadStats] = useState<LeadStats | null>(null);
+  const [assetStats, setAssetStats] = useState<AssetStats | null>(null);
+  const [bdeStats, setBdeStats] = useState<BdeStats | null>(null);
+  const [techStats, setTechStats] = useState<TechnicianStats | null>(null);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  // NLETA Tailored Key Performance Metrics
-  const nletaMetrics: MetricGroupItem[] = [
+  const loadLiveStats = async () => {
+    try {
+      const [leads, assets, bdes, techs] = await Promise.all([
+        leadService.getLeadStats(),
+        assetService.getAssetStats(),
+        bdeService.getBdeStats(),
+        technicianService.getTechnicianStats(),
+      ]);
+      setLeadStats(leads);
+      setAssetStats(assets);
+      setBdeStats(bdes);
+      setTechStats(techs);
+    } catch (err) {
+      console.error("Error loading dashboard live statistics:", err);
+    }
+  };
+
+  useEffect(() => {
+    loadLiveStats();
+    const unsubLeads = leadService.subscribe(loadLiveStats);
+    const unsubAssets = assetService.subscribe(loadLiveStats);
+    const unsubBdes = bdeService.subscribe(loadLiveStats);
+    const unsubTechs = technicianService.subscribe(loadLiveStats);
+
+    return () => {
+      unsubLeads();
+      unsubAssets();
+      unsubBdes();
+      unsubTechs();
+    };
+  }, []);
+
+  // Dynamic Live Key Performance Metrics
+  const dynamicMetrics: MetricGroupItem[] = [
     {
       id: "leads",
       title: "Total Inquiries & Leads",
-      value: "1,428",
-      change: "+14.6%",
+      value: leadStats ? leadStats.totalLeads.toLocaleString() : "...",
+      change: `+${leadStats?.newInquiries || 0} new`,
       changeType: "increase",
-      period: "vs last month",
+      period: "active pipeline",
       icon: (
         <svg className="w-6 h-6 fill-current text-brand-600 dark:text-brand-400" viewBox="0 0 24 24">
           <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
@@ -35,11 +80,11 @@ export default function AdminDashboardPage() {
     },
     {
       id: "inspections",
-      title: "Scheduled Safety Audits",
-      value: "384",
-      change: "+8.2%",
+      title: "Active Field Units / Audits",
+      value: assetStats ? assetStats.totalAssets.toLocaleString() : "...",
+      change: `${assetStats?.certifiedOperational || 0} certified`,
       changeType: "increase",
-      period: "this month",
+      period: "operational assets",
       icon: (
         <svg className="w-6 h-6 fill-current text-blue-600 dark:text-blue-400" viewBox="0 0 24 24">
           <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z" />
@@ -49,10 +94,10 @@ export default function AdminDashboardPage() {
     {
       id: "revenue",
       title: "Certification Deal Value",
-      value: "₹84.50 L",
-      change: "+22.8%",
+      value: bdeStats ? bdeStats.formattedTotalRevenue : (leadStats?.formattedPipelineValue || "₹0"),
+      change: `Target ${bdeStats ? bdeStats.formattedTotalTarget : "₹0"}`,
       changeType: "increase",
-      period: "vs last quarter",
+      period: "quarterly pipeline",
       icon: (
         <svg className="w-6 h-6 fill-current text-emerald-600 dark:text-emerald-400" viewBox="0 0 24 24">
           <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z" />
@@ -61,9 +106,9 @@ export default function AdminDashboardPage() {
     },
     {
       id: "compliance",
-      title: "Safety Compliance Rate",
-      value: "98.4%",
-      change: "+3.1%",
+      title: "Safety Compliance Score",
+      value: assetStats ? `${assetStats.averageSafetyScore}%` : "98.4%",
+      change: `${techStats?.availableOnField || 0} inspectors active`,
       changeType: "increase",
       period: "ISO / BIS certified",
       icon: (
@@ -109,7 +154,6 @@ export default function AdminDashboardPage() {
         ]}
         actions={
           <div className="flex items-center gap-2.5">
-
             <Button
               size="sm"
               variant="primary"
@@ -173,7 +217,7 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        <MetricGroup metrics={nletaMetrics} />
+        <MetricGroup metrics={dynamicMetrics} />
       </section>
 
       {/* Section 2: Analysis Graphs */}
@@ -202,9 +246,9 @@ export default function AdminDashboardPage() {
             <RadialProgressChart
               title="Quarterly Safety Quota"
               subtitle="Target vs completed inspections (Q3 2026)"
-              percentage={86.4}
-              targetAmount="500 Audits"
-              currentAmount="432 Completed"
+              percentage={assetStats ? Math.min(100, Math.round((assetStats.certifiedOperational / (assetStats.totalAssets || 1)) * 100)) : 86.4}
+              targetAmount={`${assetStats?.totalAssets || 500} Audits`}
+              currentAmount={`${assetStats?.certifiedOperational || 432} Completed`}
             />
           </div>
         </div>

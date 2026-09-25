@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 
 interface UserDropdownProps {
   userName?: string;
@@ -106,8 +107,8 @@ export default function UserDropdown({
           </div>
 
           <div className="border-t border-gray-100 pt-1 dark:border-gray-800">
-            <button
-              type="button"
+            <Link
+              href="/signin"
               onClick={() => setIsOpen(false)}
               className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-error-600 hover:bg-error-50 dark:text-error-400 dark:hover:bg-error-500/10"
             >
@@ -115,7 +116,7 @@ export default function UserDropdown({
                 <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clipRule="evenodd" />
               </svg>
               Sign Out
-            </button>
+            </Link>
           </div>
         </div>
       )}

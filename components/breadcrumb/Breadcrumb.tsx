@@ -58,12 +58,12 @@ export default function Breadcrumb({
                       {item.label}
                     </span>
                   ) : (
-                    <a
-                      href={item.href || "#"}
+                    <Link
+                      href={item.href || "/"}
                       className="text-gray-500 hover:text-brand-500 dark:text-gray-400 dark:hover:text-brand-400 transition-colors"
                     >
                       {item.label}
-                    </a>
+                    </Link>
                   )}
                 </li>
               );

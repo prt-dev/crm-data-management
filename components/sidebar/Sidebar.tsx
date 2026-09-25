@@ -50,6 +50,7 @@ export default function Sidebar({
     if (path.startsWith("/client-assets")) return "client-assets";
     if (path.startsWith("/bde")) return "bde";
     if (path.startsWith("/technicians")) return "technicians";
+    if (path.startsWith("/employees")) return "employees";
     return null;
   };
 
@@ -148,8 +149,7 @@ export default function Sidebar({
             </svg>
           ),
           children: [
-            { id: "assets-view", label: "Assets Registry", href: "/client-assets" },
-            { id: "assets-create", label: "Register New Asset", href: "/client-assets/create" },
+            { id: "assets-view", label: "View All Assets", href: "/client-assets" },
           ],
         },
         {
@@ -180,6 +180,21 @@ export default function Sidebar({
           children: [
             { id: "technicians-view", label: "Inspectors Roster", href: "/technicians" },
             { id: "technicians-create", label: "Register Inspector", href: "/technicians/create" },
+          ],
+        },
+        {
+          id: "employees",
+          label: "Employees",
+          href: "/employees",
+          badge: { text: "Staff", variant: "count" },
+          icon: (
+            <svg className="w-5 h-5 fill-current" viewBox="0 0 20 20" fill="none">
+              <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+            </svg>
+          ),
+          children: [
+            { id: "employees-view", label: "Staff Directory", href: "/employees" },
+            { id: "employees-create", label: "Register Employee", href: "/employees/create" },
           ],
         },
         {

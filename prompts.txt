@@ -93,3 +93,55 @@ bde can be assigned to client also
 
 Prompt 17:
 update prompt.txt file
+
+Prompt 18:
+create sign in and sign up pages with simple designs as follows:-
+- form in center
+- app log at top center
+- image in background
+
+- Created reusable AuthLayout component with centered card container, app logo at top center, ambient background image overlay, and theme toggle.
+- Created SignInForm & SignUpForm with validation, password visibility toggle, remember me, forgot password, and redirection to /dashboard.
+- Created /signin, /signup, and /login redirect routes.
+
+Prompt 19:
+remove back to dashboard button
+
+- Removed the "Back to Dashboard" button from AuthLayout header, keeping a clean top bar with only the theme toggle.
+
+Prompt 20:
+update the whole project by removing irrelevent codes and make code more simpler
+
+- Deleted the unused static legacy tailadmin-template/ folder (18 html files and assets).
+- Pruned 9 unused template image directories in public/images/ (country, flag, product, error, brand, icons, user, shape, video-thumb).
+- Streamlined LeadsTable.tsx from 760+ lines of duplicate mock data to a clean component integrated with leadService and DynamicTable.
+- Cleaned up redundant components/ui/Pagination.tsx forwarding file.
+- Upgraded Breadcrumb.tsx to use next/link.
+
+Prompt 21:
+check build
+
+- Ran Next.js production build verification (npm run build) and fixed type field alignment in LeadsTable.tsx to achieve a clean 0-error build.
+
+Prompt 22:
+create employee module
+
+- Created types/employee.ts with EmployeeItem, department, status, and stats types.
+- Created services/employeeService.ts with full CRUD operations, localStorage persistence, and observer subscription.
+- Created components/employees/EmployeeForm.tsx for creating and editing employee profiles.
+- Created /employees directory page with KPIs, quick department filters, DynamicTable, and quick-view drawer.
+- Created /employees/create and /employees/[id]/edit routes.
+- Added Employees item to Sidebar navigation with route detection.
+- Verified build with npm run build (22 routes generated with 0 errors).
+
+Prompt 23:
+update prompt.txt file on every prompt
+
+- Updated prompts.txt to record all prompts and implementation notes continuously.
+
+Prompt 24:
+remove hard codes and convert them into simpler code in whole project
+
+- Replaced hardcoded static values in dashboard/page.tsx with live reactive subscriptions to leadService, assetService, bdeService, and technicianService.
+- Cleaned up commented code and unused references in Sidebar.tsx.
+- Streamlined navigation configurations and verified 0-error production build.
